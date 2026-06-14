@@ -79,6 +79,10 @@ DATABASES = {
     )
 }
 
+DATABASES['default']['OPTIONS'] = {
+    'charset': 'utf8mb4',
+}
+
 # ── Auth ──────────────────────────────────────────────────────
 AUTH_USER_MODEL = 'accounts.User'
 AUTHENTICATION_BACKENDS = [
