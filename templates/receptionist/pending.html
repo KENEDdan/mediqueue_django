@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Pending Requests{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_receptionist.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">⏳ Pending Appointment Requests</h1>
+      <p class="mq-page-sub">Review each request, assign a doctor, and confirm or reject.</p>
+    </div>
+
+    {% for appt in appts %}
+    <div class="mq-card mb-4">
+      <div class="mq-card-accent-bar mq-bar-warning"></div>
+      <div class="mq-card-body">
+        <div class="row align-items-start g-3">
+          <div class="col-md-8">
+            <h5 class="fw-bold mb-1">{{ appt.patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-telephone"></i> {{ appt.patient.phone|default:"—" }} &nbsp;|&nbsp;
+              <i class="bi bi-gender-ambiguous"></i> {{ appt.patient.gender|default:"—" }} &nbsp;|&nbsp;
+              <i class="bi bi-cake"></i> {{ appt.patient.date_of_birth|default:"—" }}
+            </p>
+            <p class="mq-text-muted small mb-2">
+              <i class="bi bi-calendar-event"></i>
+              Preferred: <strong>{{ appt.preferred_date }} ({{ appt.preferred_time_of_day }})</strong>
+            </p>
+            <div class="mq-condition-box">
+              <strong>Condition / Symptoms:</strong><br>
+              {{ appt.condition_description }}
+            </div>
+            <p class="mq-text-muted small mt-2 mb-0">
+              Submitted: {{ appt.requested_at|date:"d M Y, H:i" }}
+            </p>
+          </div>
+          <div class="col-md-4 d-flex flex-column gap-2">
+           <a href="{% url 'propose_appointment' appt.pk %}" class="btn mq-btn-success">
+           <i class="bi bi-send-fill"></i> Propose Slot
+          </a>
+            <a href="{% url 'reject_appointment' appt.pk %}" class="btn mq-btn-danger">
+              <i class="bi bi-x-circle"></i> Reject
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">✅</div>
+      <p>No pending requests — all caught up!</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

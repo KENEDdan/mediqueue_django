@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}MediQueue{% endblock %} — MediQueue</title>
+  {% load static %}
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <!-- MediQueue CSS -->
+  <link href="{% static 'css/mediqueue.css' %}" rel="stylesheet"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="mq-body">
+
+  {% if request.user.is_authenticated %}
+<div class="mq-notif-wrapper">
+  <button class="mq-notif-bell" onclick="toggleNotifPanel()" id="notifBellBtn">
+    🔔
+    <span class="mq-notif-badge" id="notifBadge" style="display:none">0</span>
+  </button>
+  <div class="mq-notif-panel" id="notifPanel" style="display:none">
+    <div class="mq-notif-header">
+      <strong>Notifications</strong>
+      <button class="btn btn-link btn-sm p-0" onclick="markAllRead()">Mark all read</button>
+    </div>
+    <div id="notifList" class="mq-notif-list">
+      <p class="text-center text-muted small py-3">Loading...</p>
+    </div>
+    <div class="mq-notif-footer">
+      <a href="{% url 'notification_list' %}">View all</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  const open  = panel.style.display === 'block';
+  panel.style.display = open ? 'none' : 'block';
+  if (!open) loadNotifications();
+}
+
+function loadNotifications() {
+  fetch('{% url "notification_bell_data" %}')
+    .then(r => r.json())
+    .then(data => {
+      const badge = document.getElementById('notifBadge');
+      if (data.unread > 0) {
+        badge.style.display = 'inline-flex';
+        badge.textContent = data.unread > 9 ? '9+' : data.unread;
+      } else {
+        badge.style.display = 'none';
+      }
+      const list = document.getElementById('notifList');
+      if (!data.items.length) {
+        list.innerHTML = '<p class="text-center text-muted small py-3">No notifications yet.</p>';
+        return;
+      }
+      list.innerHTML = data.items.map(n => `
+        <a href="/notifications/${n.id}/read/" class="mq-notif-item ${n.is_read ? '' : 'unread'}">
+          <div class="mq-notif-title">${n.title}</div>
+          <div class="mq-notif-msg">${n.message}</div>
+          <div class="mq-notif-time">${n.created}</div>
+        </a>
+      `).join('');
+    });
+}
+
+function markAllRead() {
+  fetch('{% url "mark_all_read" %}').then(() => loadNotifications());
+}
+
+// Poll every 30 seconds for new notifications
+document.addEventListener('DOMContentLoaded', () => {
+  loadNotifications();
+  setInterval(loadNotifications, 30000);
+});
+
+// Close panel when clicking outside
+document.addEventListener('click', e => {
+  const wrapper = document.querySelector('.mq-notif-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById('notifPanel').style.display = 'none';
+  }
+});
+</script>
+{% endif %}
+
+{% if messages %}
+<div class="mq-flash-container">
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible mq-flash" role="alert">
+    {{ msg|safe }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/mediqueue.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+<!-- Cookie Consent -->
+<div id="cookieBanner" class="mq-cookie-banner" style="display:none">
+  <div class="mq-cookie-inner">
+    <p class="mb-0 small">
+      🍪 We use cookies to provide essential platform functionality,
+      analyse usage, and improve your experience.
+      <a href="{% url 'cookie_policy' %}" class="mq-link-sm">Learn more</a>
+    </p>
+    <div class="d-flex gap-2">
+      <button onclick="acceptCookies()" class="btn mq-btn-primary btn-sm">Accept</button>
+      <button onclick="declineCookies()" class="btn mq-btn-ghost btn-sm">Decline</button>
+    </div>
+  </div>
+</div>
+
+<script>
+if (!localStorage.getItem('mq_cookie_consent')) {
+  document.getElementById('cookieBanner').style.display = 'flex';
+}
+function acceptCookies() {
+  localStorage.setItem('mq_cookie_consent', 'accepted');
+  document.getElementById('cookieBanner').style.display = 'none';
+}
+function declineCookies() {
+  localStorage.setItem('mq_cookie_consent', 'declined');
+  document.getElementById('cookieBanner').style.display = 'none';
+}
+</script>
+
+<style>
+.mq-cookie-banner {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: #1A2330; color: #fff; padding: 16px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.3);
+}
+.mq-cookie-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 16px; }
+</style>
+
+<!-- AI Chat Widget -->
+<div id="mqChatWidget" class="mq-chat-widget">
+  <button id="mqChatToggle" class="mq-chat-toggle">💬</button>
+  <div id="mqChatPanel" class="mq-chat-panel" style="display:none">
+    <div class="mq-chat-header">
+      <span>🤖 MediQueue Assistant</span>
+      <button onclick="document.getElementById('mqChatPanel').style.display='none'">✕</button>
+    </div>
+    <div id="mqChatMessages" class="mq-chat-messages">
+      <div class="mq-chat-msg bot">Hi! 👋 Ask me anything about booking appointments, payments, or your account.</div>
+    </div>
+    <form id="mqChatForm" class="mq-chat-form">
+      <input type="text" id="mqChatInput" placeholder="Type your question..." autocomplete="off">
+      <button type="submit">➤</button>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById('mqChatToggle').addEventListener('click', () => {
+  const panel = document.getElementById('mqChatPanel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+});
+
+document.getElementById('mqChatForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = document.getElementById('mqChatInput');
+  const msg   = input.value.trim();
+  if (!msg) return;
+  const messages = document.getElementById('mqChatMessages');
+
+  messages.innerHTML += `<div class="mq-chat-msg user">${msg}</div>`;
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+
+  const typing = document.createElement('div');
+  typing.className = 'mq-chat-msg bot';
+  typing.textContent = '...';
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    const resp = await fetch('{% url "ai_chat" %}', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const data = await resp.json();
+    typing.textContent = data.reply;
+  } catch {
+    typing.textContent = "Sorry, I'm having trouble. Please try again.";
+  }
+  messages.scrollTop = messages.scrollHeight;
+});
+</script>
+</body>
+</html>

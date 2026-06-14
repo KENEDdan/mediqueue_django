@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F0F4F8;font-family:Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr><td align="center" style="padding:40px 20px;">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);">
+      <tr><td style="background:#0B4F6C;padding:28px 36px;">
+        <p style="margin:0;color:#fff;font-size:22px;font-weight:bold;">🏥 {{ app_name }}</p>
+        <p style="margin:6px 0 0;color:#A8D4E8;font-size:13px;">Clinic Appointment Management Platform</p>
+      </td></tr>
+      <tr><td style="padding:36px;">{% block body %}{% endblock %}</td></tr>
+      <tr><td style="background:#F0F4F8;padding:18px 36px;border-top:1px solid #CED6DE;text-align:center;">
+        <p style="margin:0;color:#5A6A7A;font-size:11px;">© {{ app_name }} · Automated message — do not reply directly.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

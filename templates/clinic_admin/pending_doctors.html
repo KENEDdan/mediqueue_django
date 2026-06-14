@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Pending Doctors{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">⏳ Pending Doctor Approvals</h1>
+      <p class="mq-page-sub">Doctor accounts pending activation for {{ clinic.name }}</p>
+    </div>
+
+    {% for user in pending %}
+    <div class="mq-card mb-4">
+      <div class="mq-card-accent-bar mq-bar-warning"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-bold mb-1">Dr. {{ user.full_name }}</h5>
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-envelope"></i> <code>{{ user.display_email }}</code>
+            </p>
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-telephone"></i> {{ user.phone|default:"—" }}
+            </p>
+            {% if user.doctor %}
+            <p class="text-primary small mb-0">
+              {{ user.doctor.specialization.name }}
+              {% if user.doctor.license_number %}
+              &nbsp;|&nbsp; License: {{ user.doctor.license_number }}
+              {% endif %}
+            </p>
+            {% endif %}
+            <p class="mq-text-muted small mb-0">
+              Created: {{ user.created_at|date:"d M Y" }}
+            </p>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <a href="{% url 'approve_doctor' user.pk %}"
+               class="btn mq-btn-success"
+               onclick="return confirm('Approve Dr. {{ user.full_name }}?')">
+              <i class="bi bi-check-circle-fill"></i> Approve
+            </a>
+            <a href="{% url 'reject_doctor_account' user.pk %}"
+               class="btn mq-btn-danger"
+               onclick="return confirm('Reject Dr. {{ user.full_name }}?')">
+              <i class="bi bi-x-circle-fill"></i> Reject
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">✅</div>
+      <p>No pending doctor accounts.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

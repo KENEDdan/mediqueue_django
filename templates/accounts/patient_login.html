@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Patient Sign In{% endblock %}
+{% block content %}
+<div class="mq-auth-layout">
+  <div class="mq-auth-brand">
+    <div class="mq-auth-brand-inner">
+      <div class="mq-auth-logo">🏥</div>
+      <h1 class="mq-auth-brand-name">MediQueue</h1>
+      <p class="mq-auth-brand-sub">Clinic Appointment Management</p>
+      <div class="mq-auth-pills">
+        <span class="mq-auth-pill">🏥 Multi-Clinic Support</span>
+        <span class="mq-auth-pill">📅 Smart Scheduling</span>
+        <span class="mq-auth-pill">👨‍⚕️ Doctor Availability</span>
+        <span class="mq-auth-pill">✅ Instant Booking</span>
+      </div>
+    </div>
+  </div>
+  <div class="mq-auth-form-panel">
+    <div class="mq-auth-card">
+      <h2 class="mq-auth-title">Welcome Back</h2>
+      <p class="mq-auth-sub">Sign in to your patient account</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mq-field">
+          <label class="mq-label">Email Address</label>
+          <input type="email" name="username" class="form-control mq-input" placeholder="you@example.com" required>
+        </div>
+        <div class="mq-field">
+          <label class="mq-label">Password</label>
+          <input type="password" name="password" class="form-control mq-input" placeholder="••••••••" required>
+        </div>
+        <div class="text-end mb-3">
+          <a href="{% url 'forgot_password' %}" class="mq-link-sm">Forgot password?</a>
+        </div>
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 small">Invalid email or password. Please try again.</div>
+        {% endif %}
+        <button type="submit" class="btn mq-btn-primary w-100 py-3 fw-bold">🔐 Sign In</button>
+      </form>
+      <hr class="mq-divider">
+      <p class="text-center mq-text-muted small">No account yet?</p>
+      <a href="{% url 'register_patient' %}" class="btn mq-btn-ghost w-100">Create a Free Account →</a>
+      <div class="text-center mt-3">
+        <a href="{% url 'staff_login' %}" class="mq-link-sm">Staff / Admin Login →</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

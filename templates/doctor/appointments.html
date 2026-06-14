@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}My Appointments{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_doctor.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">My Appointments</h1>
+    </div>
+
+    <!-- Filter -->
+    <div class="mq-filter-tabs mb-4">
+      <a href="?filter=upcoming" class="mq-filter-tab {% if filter_by == 'upcoming' %}active{% endif %}">Upcoming</a>
+      <a href="?filter=today"    class="mq-filter-tab {% if filter_by == 'today' %}active{% endif %}">Today</a>
+      <a href="?filter=completed"class="mq-filter-tab {% if filter_by == 'completed' %}active{% endif %}">Completed</a>
+      <a href="?filter=all"      class="mq-filter-tab {% if filter_by == 'all' %}active{% endif %}">All</a>
+    </div>
+
+    {% for appt in appointments %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-{{ appt.status_color }}"></div>
+      <div class="mq-card-body">
+        <div class="row align-items-start g-3">
+          <div class="col-md-7">
+            <h5 class="fw-bold mb-1">{{ appt.patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-calendar3"></i>
+              {{ appt.confirmed_date }} at {{ appt.confirmed_time_slot|default:"TBD" }}
+              &nbsp;|&nbsp;
+              {{ appt.patient.gender|default:"" }}
+              &nbsp;|&nbsp;
+              <i class="bi bi-telephone"></i> {{ appt.patient.phone|default:"—" }}
+            </p>
+            <p class="mq-text-muted small mb-0">
+              Reason: {{ appt.condition_description|truncatechars:100 }}
+            </p>
+            {% if appt.doctor_note %}
+            <div class="mq-condition-box mt-2">
+              <small class="fw-bold text-muted">Saved Note:</small><br>
+              {{ appt.doctor_note }}
+            </div>
+            {% endif %}
+          </div>
+          <div class="col-md-5">
+            <div class="d-flex flex-column gap-2">
+              <span class="mq-status-badge mq-status-{{ appt.status }}">
+                {{ appt.get_status_display }}
+              </span>
+              {% if appt.status == 'confirmed' %}
+              <a href="{% url 'mark_appointment' appt.pk 'completed' %}"
+                 class="btn mq-btn-success btn-sm"
+                 onclick="return confirm('Mark as completed?')">
+                ✅ Mark Complete
+              </a>
+              <a href="{% url 'mark_appointment' appt.pk 'no_show' %}"
+                 class="btn btn-outline-secondary btn-sm"
+                 onclick="return confirm('Mark as no-show?')">
+                No Show
+              </a>
+              {% endif %}
+              {% if appt.status == 'confirmed' or appt.status == 'completed' %}
+              <a href="{% url 'write_medical_report' appt.pk %}"
+                 class="btn btn-outline-primary btn-sm w-100 mt-1">
+              <i class="bi bi-file-medical-fill"></i> Medical Report
+              </a>
+{% endif %}
+              <!-- Doctor note form -->
+              <form method="post" action="{% url 'save_doctor_note' appt.pk %}" class="mt-1">
+                {% csrf_token %}
+                <textarea name="note" rows="2" class="form-control mq-input mb-1"
+                          placeholder="Add diagnosis or note...">{{ appt.doctor_note }}</textarea>
+                <button type="submit" class="btn mq-btn-primary btn-sm w-100">
+                  <i class="bi bi-save"></i> Save Note
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">📋</div>
+      <p>No appointments found.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

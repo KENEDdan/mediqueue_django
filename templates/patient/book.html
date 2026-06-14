@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book Appointment{% endblock %}
+
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_patient.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">📅 Book an Appointment</h1>
+      <p class="mq-page-sub">
+        Tell us what you're feeling and we'll match you with the right doctor.
+      </p>
+    </div>
+
+    <form method="post" id="bookingForm">
+      {% csrf_token %}
+
+      <!-- STEP 1: Describe your symptoms -->
+      <div class="mq-card mb-4">
+        <div class="mq-card-body">
+          <h5 class="fw-bold mb-1">
+            <span class="mq-step-badge">1</span>
+            Describe What You Are Feeling
+          </h5>
+          <p class="mq-text-muted small mb-3">
+            Write in your own words. You don't need medical terms — just describe
+            what you feel, where it hurts, and how long you've had it.
+          </p>
+
+          <div class="mq-field">
+            <label class="mq-label">
+              Your Symptoms / Condition <span class="text-danger">*</span>
+            </label>
+            <textarea name="condition" id="conditionText" rows="5"
+                      class="form-control mq-input"
+                      placeholder="Examples:
+- My head has been paining for 3 days and the pain comes with nausea
+- I have been feeling very tired and my heart beats fast sometimes
+- My chest feels tight when I walk and I get short of breath
+- I have a rash on my arm that has been there for 2 weeks and it is itching
+- I don't feel well but I'm not sure what is wrong — I just feel generally unwell"
+                      required>{{ request.POST.condition }}</textarea>
+            <small class="text-muted">
+              <i class="bi bi-info-circle"></i>
+              The more detail you give, the better the receptionist can match you
+              with the right doctor. No detail is too small.
+            </small>
+          </div>
+
+          <!-- Optional: Do you know which specialist you need? -->
+          <div class="mq-field mt-3">
+            <label class="mq-label">
+              Do you already know which type of doctor you need?
+            </label>
+            <div class="d-flex gap-3">
+              <label class="mq-radio-pill">
+                <input type="radio" name="understand_specialization"
+                       value="no" id="specNo"
+                       {% if request.POST.understand_specialization != 'yes' %}checked{% endif %}>
+                No — I just described my symptoms above
+              </label>
+              <label class="mq-radio-pill">
+                <input type="radio" name="understand_specialization"
+                       value="yes" id="specYes"
+                       {% if request.POST.understand_specialization == 'yes' %}checked{% endif %}>
+                Yes — let me choose a specialization
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Optional Specialization Picker (expandable) -->
+      <div id="specSection" class="mb-4" style="display:none">
+        <div class="mq-card">
+          <div class="mq-card-body">
+            <h5 class="fw-bold mb-1">
+              <span class="mq-step-badge">2</span>
+              Choose a Specialization
+            </h5>
+            <p class="mq-text-muted small mb-4">
+              Click any specialization to learn more about it. If none fits,
+              that's okay — your symptoms description is enough.
+            </p>
+
+            <!-- Specialization grid -->
+            <div class="row g-3" id="specGrid">
+              {% for spec in specializations %}
+              <div class="col-md-4">
+                <label class="mq-spec-card
+                  {% if pre_spec == spec.pk|stringformat:'s' or request.POST.specialization_preference == spec.pk|stringformat:'s' %}selected{% endif %}"
+                       data-spec-id="{{ spec.pk }}"
+                       onclick="selectSpec({{ spec.pk }}, '{{ spec.name|escapejs }}')">
+
+                  <input type="radio" name="specialization_preference"
+                         value="{{ spec.pk }}"
+                         {% if pre_spec == spec.pk|stringformat:'s' or request.POST.specialization_preference == spec.pk|stringformat:'s' %}checked{% endif %}
+                         style="position:absolute;opacity:0">
+
+                  <div class="mq-spec-card-inner">
+                    <div class="mq-spec-icon">{{ spec.icon }}</div>
+                    <div class="mq-spec-name">{{ spec.name }}</div>
+                    <div class="mq-spec-desc">{{ spec.description|truncatechars:80 }}</div>
+                    <button type="button" class="mq-spec-learn-btn"
+                            onclick="event.stopPropagation();showSpecModal({{ spec.pk }})">
+                      Learn more →
+                    </button>
+                  </div>
+                </label>
+              </div>
+              {% endfor %}
+
+              <!-- None of these -->
+              <div class="col-md-4">
+                <label class="mq-spec-card" data-spec-id="none"
+                       onclick="selectSpec('none', 'None')">
+                  <input type="radio" name="specialization_preference" value=""
+                         style="position:absolute;opacity:0">
+                  <div class="mq-spec-card-inner">
+                    <div class="mq-spec-icon">🤷</div>
+                    <div class="mq-spec-name">None of These</div>
+                    <div class="mq-spec-desc">
+                      I'm not sure which specialist I need.
+                      My symptoms description above is enough.
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {% if selected_spec %}
+            <div class="mq-spec-selected-banner mt-3" id="selectedSpecBanner">
+              <i class="bi bi-check-circle-fill text-success"></i>
+              Selected: <strong id="selectedSpecName">{{ selected_spec }}</strong>
+              <button type="button" class="btn btn-link btn-sm p-0 ms-2"
+                      onclick="selectSpec('none','None')">Clear</button>
+            </div>
+            {% else %}
+            <div class="mq-spec-selected-banner mt-3" id="selectedSpecBanner" style="display:none">
+              <i class="bi bi-check-circle-fill text-success"></i>
+              Selected: <strong id="selectedSpecName"></strong>
+              <button type="button" class="btn btn-link btn-sm p-0 ms-2"
+                      onclick="selectSpec('none','None')">Clear</button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Clinic + Date -->
+      <div class="mq-card mb-4">
+        <div class="mq-card-body">
+          <h5 class="fw-bold mb-3">
+            <span class="mq-step-badge">{% if request.POST.understand_specialization == 'yes' %}3{% else %}2{% endif %}</span>
+            Choose Clinic & Preferred Time
+          </h5>
+
+          <div class="mq-field">
+            <label class="mq-label">Select Clinic <span class="text-danger">*</span></label>
+            <select name="clinic_id" class="form-select mq-input" required>
+              <option value="">— Choose a clinic —</option>
+              {% for c in clinics %}
+              <option value="{{ c.pk }}"
+                {% if pre_clinic and pre_clinic.pk == c.pk %}selected{% endif %}
+                {% if request.POST.clinic_id == c.pk|stringformat:'s' %}selected{% endif %}>
+                {{ c.name }}
+                {% if c.address %} — {{ c.address }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mq-field">
+                <label class="mq-label">Preferred Date <span class="text-danger">*</span></label>
+                <input type="date" name="preferred_date" class="form-control mq-input"
+                       min="{% now 'Y-m-d' %}"
+                       value="{{ request.POST.preferred_date }}" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mq-field">
+                <label class="mq-label">Preferred Time of Day</label>
+                <select name="preferred_time_of_day" class="form-select mq-input">
+                  <option value="Morning"   {% if request.POST.preferred_time_of_day == 'Morning'   %}selected{% endif %}>
+                    🌅 Morning (before noon)
+                  </option>
+                  <option value="Afternoon" {% if request.POST.preferred_time_of_day == 'Afternoon' %}selected{% endif %}>
+                    ☀️ Afternoon (noon–5pm)
+                  </option>
+                  <option value="Evening"   {% if request.POST.preferred_time_of_day == 'Evening'   %}selected{% endif %}>
+                    🌆 Evening (after 5pm)
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn mq-btn-primary w-100 py-3 fw-bold fs-5">
+        <i class="bi bi-send-fill"></i> Submit Appointment Request
+      </button>
+      <p class="text-center mq-text-muted small mt-2">
+        A receptionist will review your request and propose a confirmed time slot.
+        You will be notified by email.
+      </p>
+    </form>
+  </main>
+</div>
+
+<!-- Specialization Detail Modal -->
+<div class="modal fade" id="specModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none">
+      <div class="modal-header" style="background:var(--mq-primary);border-radius:16px 16px 0 0">
+        <h5 class="modal-title text-white fw-bold" id="modalSpecName"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="mq-text-muted" id="modalSpecDesc"></p>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <div class="mq-condition-box" style="background:#F0F4F8">
+              <strong>🩺 Common Conditions Treated:</strong>
+              <div id="modalConditions" class="mt-2"></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mq-condition-box" style="background:#FFF8E8;border-left:4px solid var(--mq-warning)">
+              <strong>⚠️ Symptoms to Watch For:</strong>
+              <div id="modalSymptoms" class="mt-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mq-condition-box mt-3" style="background:#F0FFF8;border-left:4px solid var(--mq-success)">
+          <strong>✅ When to Visit This Specialist:</strong>
+          <p id="modalWhen" class="mb-0 mt-1"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn mq-btn-ghost" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn mq-btn-primary" id="modalSelectBtn">
+          Select This Specialization
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Specialization data from Django
+const specData = {
+  {% for spec in specializations %}
+  {{ spec.pk }}: {
+    name: "{{ spec.name|escapejs }}",
+    icon: "{{ spec.icon }}",
+    description: "{{ spec.description|escapejs }}",
+    conditions: {{ spec.conditions_list|safe }},
+    symptoms:   {{ spec.symptoms_list|safe }},
+    when_to_visit: "{{ spec.when_to_visit|escapejs }}"
+  },
+  {% endfor %}
+};
+
+// Show/hide specialization section
+document.querySelectorAll('[name="understand_specialization"]').forEach(el => {
+  el.addEventListener('change', () => {
+    const show = document.getElementById('specYes').checked;
+    document.getElementById('specSection').style.display = show ? 'block' : 'none';
+  });
+});
+
+// Pre-open if "yes" is checked
+if (document.getElementById('specYes')?.checked) {
+  document.getElementById('specSection').style.display = 'block';
+}
+
+// Select specialization
+let currentModalSpecId = null;
+
+function selectSpec(specId, specName) {
+  // Deselect all
+  document.querySelectorAll('.mq-spec-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('[name="specialization_preference"]').forEach(r => r.checked = false);
+
+  if (specId !== 'none' && specId !== '') {
+    const card = document.querySelector(`[data-spec-id="${specId}"]`);
+    if (card) {
+      card.classList.add('selected');
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    }
+    document.getElementById('selectedSpecName').textContent = specName;
+    document.getElementById('selectedSpecBanner').style.display = 'flex';
+  } else {
+    document.getElementById('selectedSpecBanner').style.display = 'none';
+  }
+}
+
+// Show modal with specialization details
+function showSpecModal(specId) {
+  const spec = specData[specId];
+  if (!spec) return;
+
+  currentModalSpecId = specId;
+  document.getElementById('modalSpecName').textContent = `${spec.icon} ${spec.name}`;
+  document.getElementById('modalSpecDesc').textContent = spec.description;
+
+  const condDiv = document.getElementById('modalConditions');
+  condDiv.innerHTML = spec.conditions.map(c =>
+    `<span class="badge bg-light text-dark border me-1 mb-1">${c}</span>`
+  ).join('');
+
+  const sympDiv = document.getElementById('modalSymptoms');
+  sympDiv.innerHTML = spec.symptoms.map(s =>
+    `<span class="badge bg-light text-dark border me-1 mb-1">${s}</span>`
+  ).join('');
+
+  document.getElementById('modalWhen').textContent = spec.when_to_visit;
+
+  document.getElementById('modalSelectBtn').onclick = () => {
+    selectSpec(specId, spec.name);
+    bootstrap.Modal.getInstance(document.getElementById('specModal')).hide();
+  };
+
+  new bootstrap.Modal(document.getElementById('specModal')).show();
+}
+
+// Scroll to condition box to help patient
+document.getElementById('conditionText').addEventListener('focus', () => {
+  document.getElementById('conditionText').placeholder =
+    'Be specific — include:\n' +
+    '• WHERE it hurts or what bothers you\n' +
+    '• HOW LONG you have had it\n' +
+    '• HOW SEVERE it is (mild/moderate/severe)\n' +
+    '• What makes it BETTER or WORSE\n' +
+    '• Any other symptoms you have noticed';
+});
+</script>
+{% endblock %}

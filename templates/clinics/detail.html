@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{{ clinic.name }}{% endblock %}
+{% block content %}
+
+<!-- Topnav -->
+<nav class="mq-topnav">
+  <div class="mq-topnav-inner">
+    <a class="mq-topnav-brand" href="{% url 'landing' %}">🏥 MediQueue</a>
+    <div class="mq-topnav-actions ms-auto">
+      <a href="{% url 'landing' %}" class="btn mq-btn-outline-white btn-sm">← Back</a>
+      <a href="{% url 'book_appointment' %}?clinic={{ clinic.pk }}" class="btn mq-btn-accent btn-sm">📅 Book Appointment</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div style="background:linear-gradient(135deg,var(--mq-primary),var(--mq-primary-light));padding:48px 0">
+  <div class="container text-center text-white">
+    <h1 class="fw-bold display-5">{{ clinic.name }}</h1>
+    {% if clinic.address %}<p class="mb-1"><i class="bi bi-geo-alt"></i> {{ clinic.address }}</p>{% endif %}
+    {% if clinic.phone %}<p class="mb-1"><i class="bi bi-telephone"></i> {{ clinic.phone }}</p>{% endif %}
+    {% if clinic.email %}<p class="mb-0"><i class="bi bi-envelope"></i> {{ clinic.email }}</p>{% endif %}
+  </div>
+</div>
+
+<div class="container py-5">
+
+  <!-- Stats row -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="mq-stat-card text-center" style="--accent:var(--mq-primary)">
+        <div class="mq-stat-card-icon">👨‍⚕️</div>
+        <div class="mq-stat-card-val">{{ clinic.get_doctor_count }}</div>
+        <div class="mq-stat-card-label">Doctors on Staff</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mq-stat-card text-center" style="--accent:var(--mq-accent)">
+        <div class="mq-stat-card-icon">🔬</div>
+        <div class="mq-stat-card-val">{{ services.count }}</div>
+        <div class="mq-stat-card-label">Specializations</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mq-stat-card text-center" style="--accent:var(--mq-success)">
+        <div class="mq-stat-card-icon">✅</div>
+        <div class="mq-stat-card-val">{{ clinic.get_subscription_plan_display }}</div>
+        <div class="mq-stat-card-label">Plan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services -->
+  {% if services %}
+  <h2 class="mq-section-title mb-4">🔬 Services Offered</h2>
+  <div class="row g-3 mb-5">
+    {% for svc in services %}
+    <div class="col-md-4">
+      <div class="mq-card p-3">
+        <div class="mq-card-body">
+          <h5 class="fw-bold mb-0">🔬 {{ svc.specialization.name }}</h5>
+          {% if svc.description %}<p class="text-muted small mb-0 mt-1">{{ svc.description }}</p>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Doctors -->
+  {% if doctors %}
+  <h2 class="mq-section-title mb-4">👨‍⚕️ Our Doctors</h2>
+  <div class="row g-3 mb-5">
+    {% for doc in doctors %}
+    <div class="col-md-4">
+      <div class="mq-card p-3 text-center">
+        <div class="mq-card-body">
+          <div style="font-size:48px">👨‍⚕️</div>
+          <h5 class="fw-bold mt-2 mb-1">Dr. {{ doc.user.full_name }}</h5>
+          <p class="text-primary small mb-1">{{ doc.specialization.name }}</p>
+          <span class="mq-status-badge {% if doc.is_accepting_patients %}mq-status-confirmed{% else %}mq-status-cancelled{% endif %}">
+            {% if doc.is_accepting_patients %}Accepting Patients{% else %}Not Accepting{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- CTA -->
+  <div style="background:linear-gradient(135deg,var(--mq-primary),var(--mq-primary-light));border-radius:16px;padding:48px;text-align:center;color:white">
+    <h2 class="fw-bold mb-2">Ready to book an appointment?</h2>
+    <p style="color:#A8D4E8">Create a MediQueue patient account or sign in to book with this clinic.</p>
+    <div class="d-flex gap-3 justify-content-center mt-3">
+      <a href="{% url 'book_appointment' %}?clinic={{ clinic.pk }}" class="btn mq-btn-accent px-5 py-3 fw-bold">
+        📅 Book Appointment
+      </a>
+      <a href="{% url 'register_patient' %}" class="btn mq-btn-outline-white px-5 py-3 fw-bold">
+        Create Free Account →
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}{{ role_title }}s{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="mq-page-title">
+          {% if role == 'doctor' %}👨‍⚕️{% else %}🗂️{% endif %} {{ role_title }}s
+        </h1>
+        <p class="mq-page-sub">{{ clinic.name }} — {{ staff.count }} {{ role_title|lower }}(s)</p>
+      </div>
+      <a href="{% url 'add_staff' role=role %}" class="btn mq-btn-primary">
+        + Add {{ role_title }}
+      </a>
+    </div>
+
+    <div class="mq-card mb-3" style="background:rgba(11,79,108,.05);border:none">
+      <div class="mq-card-body py-2">
+        <small class="text-muted">
+          <i class="bi bi-info-circle"></i>
+          Staff log in using their system-generated email. Share the email and password
+          with them after creating the account.
+        </small>
+      </div>
+    </div>
+
+    {% for s in staff %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar {% if s.is_active %}mq-bar-primary{% else %}mq-bar-secondary{% endif %}"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-bold mb-1">
+              {% if role == 'doctor' %}Dr. {% endif %}{{ s.full_name }}
+              {% if not s.is_active %}
+              <span class="badge bg-secondary ms-2">Inactive</span>
+              {% endif %}
+              {% if s.approval_status == 'pending' %}
+              <span class="badge bg-warning text-dark ms-2">Pending Approval</span>
+              {% endif %}
+            </h5>
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-envelope"></i>
+              <code>{{ s.display_email }}</code>
+            </p>
+            <p class="mq-text-muted small mb-0">
+              <i class="bi bi-telephone"></i> {{ s.phone|default:"—" }}
+              &nbsp;|&nbsp;
+              Joined: {{ s.created_at|date:"d M Y" }}
+            </p>
+            {% if role == 'doctor' and s.doctor %}
+            <p class="text-primary small mb-0">
+              {{ s.doctor.specialization.name }}
+              {% if s.doctor.license_number %}
+              &nbsp;|&nbsp; License: {{ s.doctor.license_number }}
+              {% endif %}
+            </p>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{% url 'toggle_staff' s.pk %}"
+               class="btn {% if s.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} btn-sm"
+               onclick="return confirm('{% if s.is_active %}Deactivate{% else %}Activate{% endif %} {{ s.full_name }}?')">
+              {% if s.is_active %}Deactivate{% else %}Activate{% endif %}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">{% if role == 'doctor' %}👨‍⚕️{% else %}🗂️{% endif %}</div>
+      <p>No {{ role_title|lower }}s added yet.</p>
+      <a href="{% url 'add_staff' role=role %}" class="btn mq-btn-primary mt-2">
+        + Add First {{ role_title }}
+      </a>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

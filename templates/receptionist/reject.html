@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Reject Appointment{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_receptionist.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">❌ Reject Appointment</h1>
+    </div>
+    <div class="mq-confirm-box">
+      <div class="mq-confirm-icon" style="color:var(--mq-danger)">✕</div>
+      <h4 class="fw-bold mb-1">{{ appt.patient.full_name }}</h4>
+      <p class="mq-text-muted small mb-3">{{ appt.condition_description|truncatechars:120 }}</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mq-field text-start">
+          <label class="mq-label">Reason for Rejection <span class="text-danger">*</span></label>
+          <textarea name="reason" rows="4" class="form-control mq-input"
+                    placeholder="e.g. No available slots for the requested period, please try a later date..."
+                    required></textarea>
+          <small class="text-muted">The patient will receive this reason by email.</small>
+        </div>
+        <div class="d-flex gap-3 justify-content-center mt-4">
+          <a href="{% url 'pending_appointments' %}" class="btn mq-btn-ghost px-5">Cancel</a>
+          <button type="submit" class="btn mq-btn-danger px-5">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %}

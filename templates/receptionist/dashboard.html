@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Receptionist Dashboard{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_receptionist.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">Receptionist Dashboard</h1>
+      <p class="mq-page-sub">{{ clinic.name }}</p>
+    </div>
+
+    <div class="mq-stats-grid">
+      <div class="mq-stat-card" style="--accent:#E8A020">
+        <div class="mq-stat-card-icon">⏳</div>
+        <div class="mq-stat-card-val">{{ pending_count }}</div>
+        <div class="mq-stat-card-label">Pending</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#2D9E6B">
+        <div class="mq-stat-card-icon">✅</div>
+        <div class="mq-stat-card-val">{{ confirmed_count }}</div>
+        <div class="mq-stat-card-label">Confirmed</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#0B4F6C">
+        <div class="mq-stat-card-icon">📅</div>
+        <div class="mq-stat-card-val">{{ today_appts.count }}</div>
+        <div class="mq-stat-card-label">Today</div>
+      </div>
+    </div>
+
+    {% if pending_count > 0 %}
+    <div class="alert mq-alert-warning d-flex justify-content-between align-items-center mt-4">
+      <span><i class="bi bi-hourglass-split"></i> <strong>{{ pending_count }}</strong> appointment(s) waiting for review.</span>
+      <a href="{% url 'pending_appointments' %}" class="btn mq-btn-primary btn-sm">Review Now →</a>
+    </div>
+    {% endif %}
+
+    <!-- Today's Schedule -->
+    <div class="mq-section-header mt-4 mb-3">
+      <h3 class="mq-section-title">📅 Today's Confirmed Appointments</h3>
+      <a href="{% url 'all_appointments' %}" class="btn mq-btn-ghost btn-sm">View All</a>
+    </div>
+
+    {% for appt in today_appts %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-success"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="fw-bold mb-1">{{ appt.patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-0">
+              <i class="bi bi-clock"></i> {{ appt.confirmed_time_slot|default:"TBD" }} &nbsp;|&nbsp;
+              <i class="bi bi-person-badge"></i>
+              {% if appt.doctor %}Dr. {{ appt.doctor.user.full_name }}{% else %}Unassigned{% endif %}
+            </p>
+          </div>
+          <span class="mq-status-badge mq-status-confirmed">Confirmed</span>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">📅</div>
+      <p>No confirmed appointments for today.</p>
+    </div>
+    {% endfor %}
+
+    <!-- Recent Pending -->
+    {% if recent_pending %}
+    <div class="mq-section-header mt-4 mb-3">
+      <h3 class="mq-section-title">⏳ Recent Pending Requests</h3>
+      <a href="{% url 'pending_appointments' %}" class="btn mq-btn-ghost btn-sm">View All</a>
+    </div>
+    {% for appt in recent_pending %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-warning"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="fw-bold mb-1">{{ appt.patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-0">
+              Preferred: {{ appt.preferred_date }} ({{ appt.preferred_time_of_day }})
+            </p>
+            <p class="mq-text-muted small mb-0">{{ appt.condition_description|truncatechars:80 }}</p>
+          </div>
+          <a href="{% url 'approve_appointment' appt.pk %}" class="btn mq-btn-success btn-sm">
+            Review →
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}My Medical Reports{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_patient.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">📋 My Medical Reports</h1>
+      <p class="mq-page-sub">Reports shared by your doctors</p>
+    </div>
+
+    {% for report in reports %}
+    <div class="mq-card mb-4">
+      <div class="mq-card-accent-bar mq-bar-primary"></div>
+      <div class="mq-card-body">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 class="fw-bold mb-1">
+              Dr. {{ report.doctor.user.full_name }} — {{ report.doctor.specialization.name }}
+            </h5>
+            <p class="mq-text-muted small mb-0">
+              <i class="bi bi-hospital"></i> {{ report.clinic.name }} &nbsp;|&nbsp;
+              <i class="bi bi-calendar3"></i> {{ report.created_at|date:"d F Y" }}
+            </p>
+          </div>
+          <span class="mq-status-badge mq-status-confirmed">Report Ready</span>
+        </div>
+
+        <!-- Chief Complaint -->
+        <div class="mq-condition-box mb-3">
+          <strong>Complaint:</strong> {{ report.chief_complaint }}
+        </div>
+
+        <!-- Diagnosis -->
+        <div class="mq-condition-box mb-3" style="background:#F0FFF8;border-left:4px solid var(--mq-success)">
+          <strong>Diagnosis:</strong> {{ report.diagnosis }}
+        </div>
+
+        <!-- Prescriptions -->
+        {% if report.prescriptions %}
+        <div class="mq-condition-box mb-3" style="background:#FFF8E8;border-left:4px solid var(--mq-warning)">
+          <strong>Prescriptions:</strong><br>
+          {{ report.prescriptions|linebreaksbr }}
+        </div>
+        {% endif %}
+
+        <!-- Vitals -->
+        {% if report.blood_pressure or report.pulse_rate or report.temperature %}
+        <div class="row g-2 mb-3">
+          {% if report.blood_pressure %}
+          <div class="col-auto">
+            <span class="badge bg-light text-dark border">
+              🩺 BP: {{ report.blood_pressure }}
+            </span>
+          </div>
+          {% endif %}
+          {% if report.pulse_rate %}
+          <div class="col-auto">
+            <span class="badge bg-light text-dark border">
+              💓 Pulse: {{ report.pulse_rate }}
+            </span>
+          </div>
+          {% endif %}
+          {% if report.temperature %}
+          <div class="col-auto">
+            <span class="badge bg-light text-dark border">
+              🌡️ Temp: {{ report.temperature }}
+            </span>
+          </div>
+          {% endif %}
+          {% if report.weight %}
+          <div class="col-auto">
+            <span class="badge bg-light text-dark border">
+              ⚖️ Weight: {{ report.weight }}
+            </span>
+          </div>
+          {% endif %}
+          {% if report.blood_oxygen %}
+          <div class="col-auto">
+            <span class="badge bg-light text-dark border">
+              🫁 O₂: {{ report.blood_oxygen }}
+            </span>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Follow-up -->
+        {% if report.follow_up_date %}
+        <div class="alert mq-alert-info small">
+          <i class="bi bi-calendar-check-fill"></i>
+          Follow-up appointment: <strong>{{ report.follow_up_date }}</strong>
+          {% if report.follow_up_notes %} — {{ report.follow_up_notes }}{% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">📋</div>
+      <p>No medical reports shared with you yet.</p>
+      <p class="small text-muted">Reports appear here after your doctor completes a consultation.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Add {{ role_title }}{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">+ Add {{ role_title }}</h1>
+      <p class="mq-page-sub">A system email will be auto-generated and shown after creation.</p>
+    </div>
+
+    <div class="mq-card" style="max-width:640px">
+      <div class="mq-card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mq-field">
+            <label class="mq-label">Full Name <span class="text-danger">*</span></label>
+            <input type="text" name="full_name" class="form-control mq-input"
+                   placeholder="{% if role == 'doctor' %}Dr. Jane Smith{% else %}Jane Doe{% endif %}" required>
+          </div>
+
+          <div class="mq-field">
+            <label class="mq-label">Phone Number</label>
+            <input type="text" name="phone" class="form-control mq-input" placeholder="+250 7XX XXX XXX">
+          </div>
+
+          <div class="mq-field">
+            <label class="mq-label">Temporary Password <span class="text-danger">*</span></label>
+            <input type="password" name="password" class="form-control mq-input"
+                   placeholder="Minimum 8 characters" minlength="8" required>
+          </div>
+
+          {% if role == 'doctor' %}
+          <div class="mq-field">
+            <label class="mq-label">Specialization <span class="text-danger">*</span></label>
+            <select name="specialization" class="form-select mq-input" required>
+              <option value="">— Select specialization —</option>
+              {% for spec in specs %}
+              <option value="{{ spec.pk }}">{{ spec.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mq-field">
+            <label class="mq-label">License Number <span class="text-muted">(optional)</span></label>
+            <input type="text" name="license_number" class="form-control mq-input" placeholder="MED-XXXX">
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="mq-field">
+                <label class="mq-label">Slot Duration (mins)</label>
+                <select name="slot_duration" class="form-select mq-input">
+                  <option value="15">15 min</option>
+                  <option value="20">20 min</option>
+                  <option value="30" selected>30 min</option>
+                  <option value="45">45 min</option>
+                  <option value="60">60 min</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="mq-field">
+                <label class="mq-label">Max Patients/Day</label>
+                <input type="number" name="max_patients" class="form-control mq-input"
+                       value="20" min="1" max="100">
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="mq-field">
+            <label class="mq-label">Security Question</label>
+            <select name="security_question" class="form-select mq-input">
+              {% for q in sec_questions %}
+              <option value="{{ q }}">{{ q }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mq-field">
+            <label class="mq-label">Security Answer</label>
+            <input type="text" name="security_answer" class="form-control mq-input"
+                   placeholder="Their answer to the security question">
+          </div>
+
+          <div class="d-flex gap-3 mt-4">
+            <a href="{% url 'manage_staff' role=role %}" class="btn mq-btn-ghost px-4">Cancel</a>
+            <button type="submit" class="btn mq-btn-primary px-5 fw-bold">
+              Add {{ role_title }} & Generate Email
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

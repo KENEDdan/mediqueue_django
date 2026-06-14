@@ -1,0 +1,11 @@
+{% extends 'emails/base_email.html' %}
+{% block body %}
+<h2>Your Medical Report is Ready 📋</h2>
+<p>Dear <strong>{{ patient_name }}</strong>,</p>
+<p>Dr. <strong>{{ doctor_name }}</strong> at <strong>{{ clinic_name }}</strong> has completed your medical report.</p>
+<div style="background:#F0FFF8;border-left:4px solid #2D9E6B;padding:16px;border-radius:6px;margin:20px 0">
+  <p style="margin:0 0 6px;font-weight:bold">Diagnosis:</p>
+  <p style="margin:0">{{ diagnosis }}</p>
+</div>
+<p>Log in to your MediQueue account to view your full report including prescriptions, treatment plan, and follow-up instructions.</p>
+{% endblock %}

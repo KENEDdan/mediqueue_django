@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Blocked Dates{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_doctor.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">🚫 Blocked Dates</h1>
+      <p class="mq-page-sub">Block dates when you are unavailable. Patients cannot book on these dates.</p>
+    </div>
+
+    <!-- Add block form -->
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3">Block a Date</h5>
+        <form method="post" class="d-flex gap-3 flex-wrap align-items-end">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="block">
+          <div>
+            <label class="mq-label">Date</label>
+            <input type="date" name="date" class="form-control mq-input"
+                   value="{{ today }}" min="{{ today }}" style="width:200px" required>
+          </div>
+          <div style="flex:1; min-width:200px">
+            <label class="mq-label">Reason (optional)</label>
+            <input type="text" name="reason" class="form-control mq-input"
+                   placeholder="e.g. Annual leave, Conference...">
+          </div>
+          <button type="submit" class="btn mq-btn-danger px-4">
+            <i class="bi bi-slash-circle"></i> Block Date
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Blocked dates list -->
+    <h3 class="mq-section-title mb-3">Currently Blocked</h3>
+    {% for b in blocked %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-danger"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="fw-bold mb-0 text-danger">
+              <i class="bi bi-slash-circle"></i> {{ b.blocked_date }}
+            </h5>
+            <p class="mq-text-muted small mb-0">
+              {{ b.reason|default:"No reason given" }}
+            </p>
+          </div>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action"     value="unblock">
+            <input type="hidden" name="blocked_id" value="{{ b.pk }}">
+            <button type="submit" class="btn mq-btn-success btn-sm"
+                    onclick="return confirm('Unblock {{ b.blocked_date }}?')">
+              <i class="bi bi-check-circle"></i> Unblock
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">✅</div>
+      <p>No dates blocked — you are available all week.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

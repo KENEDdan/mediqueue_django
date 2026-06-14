@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% block title %}{{ patient.full_name }}{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">{{ patient.full_name }}</h1>
+      <p class="mq-page-sub">Walk-in patient record — {{ clinic.name }}</p>
+    </div>
+
+    <!-- Patient info card -->
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <p class="mq-text-muted small mb-1">Gender / Age</p>
+            <p class="fw-bold mb-2">
+              {{ patient.gender|default:"—" }}
+              {% if patient.age %}, {{ patient.age }} years{% endif %}
+            </p>
+            <p class="mq-text-muted small mb-1">Phone</p>
+            <p class="fw-bold mb-2">{{ patient.phone|default:"—" }}</p>
+            <p class="mq-text-muted small mb-1">Email</p>
+            <p class="fw-bold mb-0">{{ patient.email|default:"—" }}</p>
+          </div>
+          <div class="col-md-4">
+            <p class="mq-text-muted small mb-1">Blood Group</p>
+            <p class="fw-bold mb-2">{{ patient.blood_group }}</p>
+            <p class="mq-text-muted small mb-1">Allergies</p>
+            <p class="fw-bold mb-2">{{ patient.allergies|default:"None known" }}</p>
+            <p class="mq-text-muted small mb-1">Chronic Conditions</p>
+            <p class="fw-bold mb-0">{{ patient.chronic_conditions|default:"None" }}</p>
+          </div>
+          <div class="col-md-4">
+            <p class="mq-text-muted small mb-1">Emergency Contact</p>
+            <p class="fw-bold mb-2">{{ patient.emergency_contact|default:"—" }}</p>
+            <p class="mq-text-muted small mb-1">Emergency Phone</p>
+            <p class="fw-bold mb-2">{{ patient.emergency_phone|default:"—" }}</p>
+            <p class="mq-text-muted small mb-1">Address</p>
+            <p class="fw-bold mb-0">{{ patient.address|default:"—" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add new visit -->
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3" data-bs-toggle="collapse" data-bs-target="#addVisit"
+            style="cursor:pointer">
+          + Add New Visit Record <i class="bi bi-chevron-down small"></i>
+        </h5>
+        <div class="collapse" id="addVisit">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_visit">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="mq-field">
+                  <label class="mq-label">Visit Date</label>
+                  <input type="date" name="visit_date" class="form-control mq-input" value="{{ today }}">
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div class="mq-field">
+                  <label class="mq-label">Attending Doctor</label>
+                  <select name="doctor_id" class="form-select mq-input">
+                    <option value="">— Select doctor (optional) —</option>
+                    {% for doc in doctors %}
+                    <option value="{{ doc.pk }}">Dr. {{ doc.user.full_name }} — {{ doc.specialization.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="mq-field">
+                  <label class="mq-label">Chief Complaint <span class="text-danger">*</span></label>
+                  <textarea name="chief_complaint" rows="2" class="form-control mq-input"
+                            placeholder="Patient's complaint today..." required></textarea>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mq-field">
+                  <label class="mq-label">Examination Findings</label>
+                  <textarea name="examination_notes" rows="2" class="form-control mq-input"></textarea>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mq-field">
+                  <label class="mq-label">Diagnosis</label>
+                  <textarea name="diagnosis" rows="2" class="form-control mq-input"></textarea>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mq-field">
+                  <label class="mq-label">Treatment Plan</label>
+                  <textarea name="treatment_plan" rows="2" class="form-control mq-input"></textarea>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mq-field">
+                  <label class="mq-label">Prescriptions</label>
+                  <textarea name="prescriptions" rows="2" class="form-control mq-input"></textarea>
+                </div>
+              </div>
+
+              <!-- Vitals row -->
+              <div class="col-12">
+                <p class="mq-label mb-2">Vitals</p>
+                <div class="row g-2">
+                  {% for fname, lbl, ph in vital_fields %}
+                  <div class="col-md-2">
+                    <input type="text" name="{{ fname }}" class="form-control mq-input form-control-sm"
+                           placeholder="{{ lbl }}">
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Payment -->
+              <div class="col-md-4">
+                <div class="mq-field">
+                  <label class="mq-label">Amount Charged</label>
+                  <input type="number" name="amount_charged" class="form-control mq-input"
+                         placeholder="0.00" step="0.01" min="0">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mq-field">
+                  <label class="mq-label">Amount Paid</label>
+                  <input type="number" name="amount_paid" class="form-control mq-input"
+                         placeholder="0.00" step="0.01" min="0">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mq-field">
+                  <label class="mq-label">Payment Notes</label>
+                  <input type="text" name="payment_notes" class="form-control mq-input"
+                         placeholder="e.g. Paid in full / Balance owed">
+                </div>
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn mq-btn-primary px-5">
+                  <i class="bi bi-save-fill"></i> Save Visit Record
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visit history -->
+    <h3 class="mq-section-title mb-3">Visit History ({{ visits.count }})</h3>
+    {% for visit in visits %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-primary"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <h6 class="fw-bold mb-0">{{ visit.visit_date|date:"d F Y" }}</h6>
+          {% if visit.doctor %}
+          <span class="text-primary small">Dr. {{ visit.doctor.user.full_name }}</span>
+          {% endif %}
+        </div>
+        <div class="mq-condition-box mb-2">
+          <strong>Complaint:</strong> {{ visit.chief_complaint }}
+        </div>
+        {% if visit.diagnosis %}
+        <div class="mq-condition-box mb-2" style="background:#F0FFF8;border-left:4px solid var(--mq-success)">
+          <strong>Diagnosis:</strong> {{ visit.diagnosis }}
+        </div>
+        {% endif %}
+        {% if visit.prescriptions %}
+        <div class="mq-condition-box mb-2" style="background:#FFF8E8;border-left:4px solid var(--mq-warning)">
+          <strong>Prescriptions:</strong> {{ visit.prescriptions }}
+        </div>
+        {% endif %}
+        {% if visit.amount_charged %}
+        <p class="small text-muted mb-0">
+          Charged: <strong>{{ visit.amount_charged }}</strong>
+          | Paid: <strong>{{ visit.amount_paid }}</strong>
+          {% if visit.payment_notes %} — {{ visit.payment_notes }}{% endif %}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state"><p>No visits recorded yet.</p></div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

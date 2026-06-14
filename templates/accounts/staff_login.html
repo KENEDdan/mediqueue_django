@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Staff Sign In{% endblock %}
+{% block content %}
+<div class="mq-auth-layout">
+  <div class="mq-auth-brand">
+    <div class="mq-auth-brand-inner">
+      <div class="mq-auth-logo">🏥</div>
+      <h1 class="mq-auth-brand-name">MediQueue</h1>
+      <p class="mq-auth-brand-sub">Staff & Admin Portal</p>
+      <div class="mq-auth-pills">
+        <span class="mq-auth-pill">🛡️ Super Admin</span>
+        <span class="mq-auth-pill">🏥 Clinic Admin</span>
+        <span class="mq-auth-pill">🗂️ Receptionist</span>
+        <span class="mq-auth-pill">👨‍⚕️ Doctor</span>
+      </div>
+      <div class="mq-auth-hint mt-4">
+        <p class="small" style="color:rgba(255,255,255,.7)">
+          💡 Super Admin:<br>
+          <code style="color:#A8D4E8">admin@mediqueue.com</code><br>
+          Clinic staff use their system-generated email.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="mq-auth-form-panel">
+    <div class="mq-auth-card">
+      <h2 class="mq-auth-title">Staff & Admin Sign In</h2>
+      <p class="mq-auth-sub">Sign in with your staff credentials</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mq-field">
+          <label class="mq-label">Email Address</label>
+          <input type="email" name="email" class="form-control mq-input" placeholder="your.name@clinic.mediqueue" required>
+        </div>
+        <div class="mq-field">
+          <label class="mq-label">Password</label>
+          <input type="password" name="password" class="form-control mq-input" placeholder="••••••••" required>
+        </div>
+        <div class="text-end mb-3">
+          <a href="{% url 'forgot_password' %}" class="mq-link-sm">Forgot password?</a>
+        </div>
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <button type="submit" class="btn mq-btn-primary w-100 py-3 fw-bold">🔐 Sign In</button>
+      </form>
+      <hr class="mq-divider">
+      <div class="text-center">
+        <a href="{% url 'patient_login' %}" class="mq-link-sm">Patient Login →</a>
+        &nbsp;|&nbsp;
+        <a href="{% url 'landing' %}" class="mq-link-sm">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

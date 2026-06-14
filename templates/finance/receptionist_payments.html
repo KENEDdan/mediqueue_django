@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Payment Overview{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_receptionist.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">💳 Payment Overview</h1>
+      <p class="mq-page-sub">Recent patient payments — for appointment scheduling reference</p>
+    </div>
+
+    <!-- Today stats -->
+    <div class="mq-stats-grid mb-4">
+      <div class="mq-stat-card" style="--accent:#2D9E6B">
+        <div class="mq-stat-card-icon">💵</div>
+        <div class="mq-stat-card-val">${{ today_total|floatformat:2 }}</div>
+        <div class="mq-stat-card-label">Received Today</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#0B4F6C">
+        <div class="mq-stat-card-icon">✅</div>
+        <div class="mq-stat-card-val">{{ today_count }}</div>
+        <div class="mq-stat-card-label">Payments Today</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E8A020">
+        <div class="mq-stat-card-icon">⏳</div>
+        <div class="mq-stat-card-val">{{ pending_queue.count }}</div>
+        <div class="mq-stat-card-label">Awaiting Verification</div>
+      </div>
+    </div>
+
+    <!-- Payout account info (for sharing with patients) -->
+    {% if payout_account %}
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-2">
+          <i class="bi bi-info-circle-fill text-primary"></i>
+          Payment Instructions for Patients
+        </h5>
+        <p class="mq-text-muted small mb-2">
+          Share these details with patients who need to pay their booking fee:
+        </p>
+        <div class="mq-condition-box">
+          <strong>Method:</strong> {{ payout_account.get_method_display }}<br>
+          {% if payout_account.account_name %}
+          <strong>Account Name:</strong> {{ payout_account.account_name }}<br>
+          {% endif %}
+          {% if payout_account.account_number %}
+          <strong>Account / Number:</strong> <code>{{ payout_account.account_number }}</code><br>
+          {% endif %}
+          {% if payout_account.bank_name %}
+          <strong>Bank:</strong> {{ payout_account.bank_name }}<br>
+          {% endif %}
+          {% if payout_account.instructions %}
+          <br><strong>Instructions:</strong> {{ payout_account.instructions }}
+          {% endif %}
+        </div>
+        <p class="mq-text-muted small mt-2 mb-0">
+          Default booking fee: <strong>{{ payout_account.currency }} {{ payout_account.booking_fee_default }}</strong>
+        </p>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert mq-alert-warning mb-4">
+      <i class="bi bi-exclamation-triangle"></i>
+      No payout account set up yet. Ask the clinic admin to configure it.
+    </div>
+    {% endif %}
+
+    <!-- Pending verification queue -->
+    {% if pending_queue %}
+    <h3 class="mq-section-title mb-3">⏳ Payments Awaiting Verification</h3>
+    {% for payment in pending_queue %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-warning"></div>
+      <div class="mq-card-body d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="fw-bold mb-1">{{ payment.appointment.patient.full_name }}</h5>
+          <p class="mq-text-muted small mb-0">
+            Method: <strong>{{ payment.method }}</strong>
+            {% if payment.reference %} | Ref: <code>{{ payment.reference }}</code>{% endif %}
+          </p>
+          <p class="mq-text-muted small mb-0">
+            Amount: <strong>${{ payment.amount }}</strong> |
+            Submitted: {{ payment.paid_at|date:"d M Y H:i" }}
+          </p>
+        </div>
+        <a href="{% url 'verify_payment' payment.appointment_id %}"
+           class="btn mq-btn-primary btn-sm">
+          Verify →
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Recent verified payments -->
+    <h3 class="mq-section-title mb-3 mt-4">Recent Verified Payments</h3>
+    {% for txn in recent %}
+    <div class="mq-card mb-2">
+      <div class="mq-card-accent-bar mq-bar-success"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <span class="fw-bold">{{ txn.patient_display }}</span>
+            <span class="mq-text-muted small ms-2">{{ txn.method }}</span>
+          </div>
+          <div class="text-end">
+            <span class="fw-bold text-success">${{ txn.amount }}</span>
+            <div class="mq-text-muted small">{{ txn.paid_at|date:"d M, H:i" }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">💳</div>
+      <p>No verified payments yet.</p>
+    </div>
+    {% endfor %}
+
+  </main>
+</div>
+{% endblock %}

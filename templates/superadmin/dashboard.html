@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Super Admin Dashboard{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_superadmin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">Platform Dashboard</h1>
+      <p class="mq-page-sub">MediQueue Super Admin Panel</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="mq-stats-grid">
+      <div class="mq-stat-card" style="--accent:#0B4F6C">
+        <div class="mq-stat-card-icon">🏥</div>
+        <div class="mq-stat-card-val">{{ stats.total_clinics }}</div>
+        <div class="mq-stat-card-label">Total Clinics</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E8A020">
+        <div class="mq-stat-card-icon">⏳</div>
+        <div class="mq-stat-card-val">{{ stats.pending_clinics }}</div>
+        <div class="mq-stat-card-label">Pending Review</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#2D9E6B">
+        <div class="mq-stat-card-icon">🧑</div>
+        <div class="mq-stat-card-val">{{ stats.total_patients }}</div>
+        <div class="mq-stat-card-label">Total Patients</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#1A7A9E">
+        <div class="mq-stat-card-icon">👨‍⚕️</div>
+        <div class="mq-stat-card-val">{{ stats.total_doctors }}</div>
+        <div class="mq-stat-card-label">Active Doctors</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E05C2A">
+        <div class="mq-stat-card-icon">📅</div>
+        <div class="mq-stat-card-val">{{ stats.total_appts }}</div>
+        <div class="mq-stat-card-label">Appointments</div>
+      </div>
+    </div>
+
+    <!-- Pending Clinics -->
+    {% if pending %}
+    <div class="mq-section-header mt-4">
+      <h3 class="mq-section-title">⏳ Clinics Awaiting Approval</h3>
+      <a href="{% url 'superadmin:pending_clinics' %}" class="btn mq-btn-ghost btn-sm">View All</a>
+    </div>
+    {% for clinic in pending %}
+    <div class="mq-card mq-card-warning mb-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="fw-bold mb-1">{{ clinic.name }}</h5>
+          {% with admin=clinic.staff.filter.clinic_admin.first %}
+          {% endwith %}
+          <p class="mq-text-muted small mb-1">
+            <i class="bi bi-telephone"></i> {{ clinic.phone }}
+            &nbsp;|&nbsp;
+            <i class="bi bi-envelope"></i> {{ clinic.email }}
+          </p>
+          <p class="mq-text-muted small mb-0">
+            Registered: {{ clinic.created_at|date:"d M Y" }}
+            &nbsp;|&nbsp;
+            Plan chosen: <strong>{{ clinic.get_subscription_plan_display }}</strong>
+          </p>
+          <div class="mt-2">
+            {% for doc in clinic.documents.all %}
+            <span class="mq-doc-tag"><i class="bi bi-paperclip"></i> {{ doc.get_doc_type_display }}</span>
+            {% empty %}
+            <span class="text-danger small"><i class="bi bi-exclamation-triangle"></i> No documents uploaded</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'superadmin:approve_clinic' clinic.pk %}" class="btn mq-btn-success btn-sm">
+            <i class="bi bi-check-circle"></i> Approve
+          </a>
+          <a href="{% url 'superadmin:reject_clinic' clinic.pk %}" class="btn mq-btn-danger btn-sm">
+            <i class="bi bi-x-circle"></i> Reject
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="mq-empty-state mt-4">
+      <div class="mq-empty-icon">✅</div>
+      <p>No pending clinics — all caught up!</p>
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

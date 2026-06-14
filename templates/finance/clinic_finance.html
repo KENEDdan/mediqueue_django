@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Clinic Finance{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header d-flex justify-content-between align-items-start">
+      <div>
+        <h1 class="mq-page-title">💰 Finance Dashboard</h1>
+        <p class="mq-page-sub">{{ clinic.name }} — patient payment records</p>
+      </div>
+      <div class="d-flex gap-2">
+        {% for val, label in filter_periods %}
+        <a href="?period={{ val }}"
+           class="mq-filter-tab {% if period == val %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Payout account alert -->
+    {% if not payout_account %}
+    <div class="alert alert-warning d-flex justify-content-between align-items-center mb-4">
+      <span>
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>Payout account not set up.</strong>
+        Patients don't know where to send payment. Set up your account now.
+      </span>
+      <a href="{% url 'setup_payout_account' %}" class="btn mq-btn-primary btn-sm">
+        Set Up Now →
+      </a>
+    </div>
+    {% else %}
+    <div class="mq-card mb-4" style="border-left:4px solid var(--mq-success)">
+      <div class="mq-card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="fw-bold mb-0">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            Payout account: {{ payout_account.get_method_display }}
+            {% if payout_account.account_number %}
+            — {{ payout_account.account_number }}
+            {% endif %}
+          </p>
+          <p class="mq-text-muted small mb-0">
+            Default booking fee: {{ payout_account.currency }} {{ payout_account.booking_fee_default }}
+          </p>
+        </div>
+        <a href="{% url 'setup_payout_account' %}" class="btn mq-btn-ghost btn-sm">Edit</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- KPIs -->
+    <div class="mq-stats-grid mb-4">
+      <div class="mq-stat-card" style="--accent:#2D9E6B">
+        <div class="mq-stat-card-icon">💵</div>
+        <div class="mq-stat-card-val">${{ total_received|floatformat:2 }}</div>
+        <div class="mq-stat-card-label">Received ({{ period }} days)</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E8A020">
+        <div class="mq-stat-card-icon">⏳</div>
+        <div class="mq-stat-card-val">${{ pending_amount|floatformat:2 }}</div>
+        <div class="mq-stat-card-label">Pending Verification</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#0B4F6C">
+        <div class="mq-stat-card-icon">📋</div>
+        <div class="mq-stat-card-val">{{ verified_count }} / {{ total_count }}</div>
+        <div class="mq-stat-card-label">Verified / Total</div>
+      </div>
+    </div>
+
+    <!-- Revenue by method -->
+    {% if by_method %}
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3">Revenue by Payment Method</h5>
+        {% for method, amount in by_method.items %}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-semibold">{{ method|title|replace:"_":" " }}</span>
+          <span class="fw-bold text-success">${{ amount|floatformat:2 }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Transaction table -->
+    <div class="mq-section-header mb-3">
+      <h3 class="mq-section-title">Patient Payment Records</h3>
+    </div>
+    <div class="mq-card mb-4">
+      <div style="overflow-x:auto">
+        <table class="mq-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Reference</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for txn in transactions %}
+            <tr>
+              <td class="fw-bold">{{ txn.patient_display }}</td>
+              <td class="fw-bold text-success">{{ txn.currency }} {{ txn.amount }}</td>
+              <td>{{ txn.method }}</td>
+              <td class="text-muted small"><code>{{ txn.reference_no|default:"—" }}</code></td>
+              <td>
+                <span class="mq-status-badge
+                  {% if txn.status == 'verified' %}mq-status-confirmed
+                  {% elif txn.status == 'pending' %}mq-status-pending
+                  {% else %}mq-status-cancelled{% endif %}">
+                  {{ txn.status|upper }}
+                </span>
+              </td>
+              <td class="text-muted small">{{ txn.paid_at|date:"d M Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No transactions recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Subscription payments made to platform -->
+    <div class="mq-section-header mb-3">
+      <h3 class="mq-section-title">Your Subscription Payments to MediQueue</h3>
+    </div>
+    <div class="mq-card">
+      <div style="overflow-x:auto">
+        <table class="mq-table">
+          <thead>
+            <tr><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Period</th></tr>
+          </thead>
+          <tbody>
+            {% for p in sub_payments %}
+            <tr>
+              <td>{{ p.plan|title }}</td>
+              <td class="fw-bold">${{ p.amount }}</td>
+              <td>{{ p.get_method_display }}</td>
+              <td>
+                <span class="mq-status-badge
+                  {% if p.status == 'paid' %}mq-status-confirmed{% else %}mq-status-pending{% endif %}">
+                  {{ p.status|upper }}
+                </span>
+              </td>
+              <td class="text-muted small">
+                {% if p.period_start %}{{ p.period_start|date:"d M Y" }} – {{ p.period_end|date:"d M Y" }}{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No subscription payments recorded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}

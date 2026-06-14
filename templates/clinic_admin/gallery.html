@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Photo Gallery{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">📸 Hospital Photo Gallery</h1>
+      <p class="mq-page-sub">These photos appear on the landing page and your public profile.</p>
+    </div>
+
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mq-field">
+            <label class="mq-label">Upload Photos (multiple allowed)</label>
+            <input type="file" name="images" class="form-control mq-input" multiple accept="image/*" required>
+          </div>
+          <div class="mq-field">
+            <label class="mq-label">Caption (optional)</label>
+            <input type="text" name="caption" class="form-control mq-input" placeholder="e.g. Main reception area">
+          </div>
+          <button type="submit" name="upload" value="1" class="btn mq-btn-primary px-4">
+            <i class="bi bi-upload"></i> Upload
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      {% for photo in photos %}
+      <div class="col-md-3">
+        <div class="mq-card p-0" style="overflow:hidden">
+          <img src="{{ photo.image.url }}" style="width:100%;height:140px;object-fit:cover" alt="">
+          <div class="p-2">
+            {% if photo.is_primary %}
+            <span class="badge bg-success mb-1">Primary</span>
+            {% endif %}
+            {% if photo.caption %}<p class="small mb-2">{{ photo.caption }}</p>{% endif %}
+            <div class="d-flex gap-1">
+              {% if not photo.is_primary %}
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <button name="set_primary" value="{{ photo.pk }}" class="btn btn-outline-primary btn-sm">Set Primary</button>
+              </form>
+              {% endif %}
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <button name="delete_id" value="{{ photo.pk }}" class="btn btn-outline-danger btn-sm"
+                        onclick="return confirm('Delete this photo?')">Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center text-muted py-5">No photos uploaded yet.</div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+{% endblock %}

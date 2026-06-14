@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Review Appointment Proposal{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_patient.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">📋 Appointment Proposal</h1>
+      <p class="mq-page-sub">{{ appt.clinic.name }} has proposed a slot for you. Please review and respond.</p>
+    </div>
+
+    <div class="mq-card mb-4" style="border-left:5px solid var(--mq-primary)">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3">Proposed Appointment Details</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <p class="mq-text-muted small mb-1">Clinic</p>
+            <p class="fw-bold mb-3">{{ appt.clinic.name }}</p>
+            <p class="mq-text-muted small mb-1">Doctor</p>
+            <p class="fw-bold mb-3">Dr. {{ appt.doctor.user.full_name }} — {{ appt.doctor.specialization.name }}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mq-text-muted small mb-1">Proposed Date</p>
+            <p class="fw-bold mb-3">{{ appt.proposed_date }}</p>
+            <p class="mq-text-muted small mb-1">Proposed Time</p>
+            <p class="fw-bold mb-3">{{ appt.proposed_time_slot }}</p>
+          </div>
+        </div>
+
+        {% if appt.booking_fee > 0 %}
+        <div class="alert mq-alert-warning">
+          <i class="bi bi-credit-card-fill"></i>
+          <strong>Booking Fee Required:</strong>
+          {{ appt.booking_fee_currency }} {{ appt.booking_fee }} —
+          payable after you accept this slot.
+        </div>
+        {% endif %}
+
+        {% if appt.proposal_message %}
+        <div class="mq-condition-box">
+          <strong>Message from receptionist:</strong><br>
+          {{ appt.proposal_message }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-3">
+        <button type="submit" name="response" value="accept"
+                class="btn mq-btn-success px-5 py-3 fw-bold flex-fill">
+          <i class="bi bi-check-circle-fill"></i>
+          Yes, this slot works for me
+          {% if appt.booking_fee > 0 %} — Proceed to Payment{% endif %}
+        </button>
+        <button type="submit" name="response" value="decline"
+                class="btn mq-btn-danger px-5 py-3 fw-bold flex-fill">
+          <i class="bi bi-x-circle-fill"></i>
+          No, suggest another slot
+        </button>
+      </div>
+    </form>
+  </main>
+</div>
+{% endblock %}

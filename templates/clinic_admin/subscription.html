@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Subscription{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">💳 Subscription Plan</h1>
+    </div>
+
+    <!-- Current Plan -->
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <div class="d-flex align-items-center gap-4">
+          <div style="font-size:48px">{{ plan.icon }}</div>
+          <div>
+            <h3 class="fw-bold mb-1">{{ plan.name }} Plan</h3>
+            <p class="mq-text-muted mb-1">Status: <strong>{{ clinic.get_subscription_status_display }}</strong></p>
+            <p class="mq-text-muted mb-0">
+              Expires: <strong>{{ clinic.subscription_expiry|default:"—" }}</strong>
+              &nbsp;|&nbsp; {{ clinic.days_remaining }} days remaining
+            </p>
+            {% if clinic.card_last4 %}
+            <p class="mq-text-muted mt-1 mb-0">
+              Card: {{ clinic.card_brand }} ending in ••••{{ clinic.card_last4 }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upgrade Plans -->
+    <h3 class="mq-section-title mb-3">Upgrade Your Plan</h3>
+    <form method="post" action="{% url 'upgrade_plan' %}" id="upgradeForm">
+      {% csrf_token %}
+      <div class="row g-4 mb-4">
+        {% for pk, p in plans.items %}
+        <div class="col-md-4">
+          <label class="mq-plan-option h-100" style="cursor:pointer">
+            <input type="radio" name="plan" value="{{ pk }}" {% if clinic.subscription_plan == pk %}checked{% endif %}>
+            <div class="mq-plan-option-body h-100">
+              <div class="text-center mb-3">
+                <div style="font-size:32px">{{ p.icon }}</div>
+                <h5 class="fw-bold">{{ p.name }}</h5>
+                <div style="font-size:28px;font-weight:900;color:var(--mq-primary)">${{ p.price_monthly }}</div>
+                <small class="text-muted">per month • ${{ p.price_annual }}/year</small>
+                {% if p.popular %}<div><span class="mq-popular-tag">MOST POPULAR</span></div>{% endif %}
+              </div>
+              <ul class="list-unstyled">
+                {% for feat in p.features %}
+                <li class="small mb-1"><i class="bi bi-check-circle-fill text-success me-1"></i>{{ feat }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Billing -->
+      <div class="mq-card mb-4">
+        <div class="mq-card-body">
+          <h5 class="fw-bold mb-3">Billing Cycle</h5>
+          <div class="d-flex gap-3">
+            <label class="mq-radio-pill"><input type="radio" name="billing_cycle" value="monthly" checked> Monthly</label>
+            <label class="mq-radio-pill"><input type="radio" name="billing_cycle" value="annual"> Annual <span class="text-success small">(Save 17%)</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div class="mq-card mb-4">
+        <div class="mq-card-body">
+          <h5 class="fw-bold mb-3"><i class="bi bi-credit-card"></i> Payment Details</h5>
+          <div class="mq-card-notice mb-3">
+            <i class="bi bi-shield-lock-fill text-success"></i> Your card is used for future billing. No charge until your current period ends.
+          </div>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="mq-label">Cardholder Name</label>
+              <input type="text" name="card_holder" class="form-control mq-input" placeholder="Name on card" required>
+            </div>
+            <div class="col-12">
+              <label class="mq-label">Card Number</label>
+              <input type="text" name="card_number" id="cardNumber" class="form-control mq-input" placeholder="1234 5678 9012 3456" required>
+            </div>
+            <div class="col-6">
+              <label class="mq-label">Expiry</label>
+              <input type="text" name="card_expiry" class="form-control mq-input" placeholder="MM/YY" maxlength="5" required>
+            </div>
+            <div class="col-6">
+              <label class="mq-label">CVV</label>
+              <input type="password" name="card_cvv" class="form-control mq-input" placeholder="•••" maxlength="4" required>
+              <!-- Add this notice in the Card Details section of subscription.html -->
+              <div class="mq-card-notice mb-3" style="background:#FFF8E8;border-left:4px solid var(--mq-warning)">
+              <i class="bi bi-credit-card-fill"></i>
+              <strong>Subscription payments accept cards only.</strong>
+                  Visa, Mastercard, and Amex are accepted.
+                  Patient booking fees support all payment methods including mobile money.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn mq-btn-primary w-100 py-3 fw-bold fs-5">
+        Confirm Upgrade →
+      </button>
+    </form>
+  </main>
+</div>
+{% endblock %}

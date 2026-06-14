@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}All Users{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_superadmin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">👥 All Users</h1>
+      <p class="mq-page-sub">{{ users.count }} user(s)</p>
+    </div>
+
+    <!-- Role filter -->
+    <div class="mq-filter-tabs mb-4">
+      <a href="{% url 'superadmin:all_users' %}"
+         class="mq-filter-tab {% if not role_filter %}active{% endif %}">All</a>
+      {% for val, label in roles %}
+      <a href="?role={{ val }}"
+         class="mq-filter-tab {% if role_filter == val %}active{% endif %}">
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+
+    {% for u in users %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar
+        {% if u.role == 'super_admin' %}mq-bar-primary
+        {% elif u.role == 'clinic_admin' %}mq-bar-success
+        {% elif u.role == 'doctor' %}mq-bar-warning
+        {% elif u.role == 'receptionist' %}mq-bar-secondary
+        {% else %}mq-bar-primary{% endif %}">
+      </div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-bold mb-1">
+              {% if u.role == 'super_admin' %}🛡️
+              {% elif u.role == 'clinic_admin' %}👔
+              {% elif u.role == 'doctor' %}🩺
+              {% elif u.role == 'receptionist' %}🗂️
+              {% else %}🧑{% endif %}
+              {{ u.full_name }}
+            </h5>
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-envelope"></i> {{ u.display_email }}
+            </p>
+            {% if u.clinic %}
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-hospital"></i> {{ u.clinic.name }}
+            </p>
+            {% endif %}
+            <p class="mq-text-muted small mb-0">
+              Joined: {{ u.created_at|date:"d M Y" }}
+            </p>
+          </div>
+          <div class="text-end">
+            <span class="mq-status-badge
+              {% if u.is_active %}mq-status-confirmed{% else %}mq-status-cancelled{% endif %}">
+              {% if u.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+            <p class="mq-text-muted small mt-1">{{ u.get_role_display }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">👥</div>
+      <p>No users found.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

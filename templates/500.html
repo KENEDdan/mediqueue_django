@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Server Error{% endblock %}
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px">
+  <div style="font-size:80px;margin-bottom:16px">⚠️</div>
+  <h1 style="font-size:72px;font-weight:900;color:var(--mq-danger);margin:0">500</h1>
+  <h2 style="font-size:24px;font-weight:700;margin:12px 0 8px">Something Went Wrong</h2>
+  <p style="color:var(--mq-text-muted);max-width:400px;margin-bottom:32px">
+    An unexpected error occurred. Our team has been notified. Please try again shortly.
+  </p>
+  <a href="{% url 'landing' %}" class="btn mq-btn-primary px-5 py-3 fw-bold">← Back to MediQueue</a>
+</div>
+{% endblock %}

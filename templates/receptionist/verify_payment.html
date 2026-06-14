@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Verify Payment{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_receptionist.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">🔍 Verify Payment</h1>
+    </div>
+
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3">Appointment Details</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <p class="mq-text-muted small mb-1">Patient</p>
+            <p class="fw-bold mb-2">{{ appt.patient.full_name }}</p>
+            <p class="mq-text-muted small mb-1">Doctor</p>
+            <p class="fw-bold mb-2">Dr. {{ appt.doctor.user.full_name }}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mq-text-muted small mb-1">Date & Time</p>
+            <p class="fw-bold mb-2">{{ appt.confirmed_date }} at {{ appt.confirmed_time_slot }}</p>
+            <p class="mq-text-muted small mb-1">Amount</p>
+            <p class="fw-bold fs-4 mb-2" style="color:var(--mq-success)">
+              {{ appt.booking_fee_currency }} {{ appt.booking_fee }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3">Payment Information</h5>
+        <p><strong>Method:</strong> {{ payment.get_method_display }}</p>
+        {% if payment.reference %}
+        <p><strong>Reference:</strong> <code>{{ payment.reference }}</code></p>
+        {% endif %}
+        <p><strong>Submitted:</strong> {{ payment.paid_at|date:"d M Y H:i" }}</p>
+        {% if payment.proof_of_payment %}
+        <div class="mb-3">
+          <p class="fw-bold mb-2">Proof of Payment:</p>
+          <a href="{{ payment.proof_of_payment.url }}" target="_blank"
+             class="btn mq-btn-primary">
+            <i class="bi bi-eye-fill"></i> View / Download Proof
+          </a>
+        </div>
+        {% else %}
+        <p class="text-muted"><i class="bi bi-dash-circle"></i> No proof uploaded</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mq-card">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3">Your Decision</h5>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mq-field">
+            <label class="mq-label">Notes (optional)</label>
+            <textarea name="notes" rows="2" class="form-control mq-input"
+                      placeholder="e.g. Payment confirmed via bank transfer ref TRF-001"></textarea>
+          </div>
+          <div class="d-flex gap-3 mt-3">
+            <a href="{% url 'payment_queue' %}" class="btn mq-btn-ghost px-4">Cancel</a>
+            <button type="submit" name="action" value="reject"
+                    class="btn mq-btn-danger px-4"
+                    onclick="return confirm('Reject this payment? Patient will need to resubmit.')">
+              <i class="bi bi-x-circle"></i> Reject Payment
+            </button>
+            <button type="submit" name="action" value="verify"
+                    class="btn mq-btn-success px-5 fw-bold flex-fill"
+                    onclick="return confirm('Verify payment and fully confirm this appointment?')">
+              <i class="bi bi-check-circle-fill"></i> Verify & Confirm Appointment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

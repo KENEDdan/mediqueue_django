@@ -1,0 +1,14 @@
+{% extends 'emails/base_email.html' %}
+{% block body %}
+<h2>Appointment Slot Proposed 📋</h2>
+<p>Dear <strong>{{ patient_name }}</strong>,</p>
+<p><strong>{{ clinic_name }}</strong> has proposed an appointment slot for you.</p>
+<table style="width:100%;border-collapse:collapse;margin:20px 0">
+  <tr style="background:#F0F4F8"><td style="padding:10px 14px;font-weight:bold;width:40%">Doctor</td><td style="padding:10px 14px">Dr. {{ doctor_name }}</td></tr>
+  <tr><td style="padding:10px 14px;font-weight:bold">Date</td><td style="padding:10px 14px">{{ proposed_date }}</td></tr>
+  <tr style="background:#F0F4F8"><td style="padding:10px 14px;font-weight:bold">Time</td><td style="padding:10px 14px">{{ proposed_time }}</td></tr>
+  {% if booking_fee != '0' %}<tr><td style="padding:10px 14px;font-weight:bold">Booking Fee</td><td style="padding:10px 14px;color:#E05C2A;font-weight:bold">{{ currency }} {{ booking_fee }}</td></tr>{% endif %}
+</table>
+{% if proposal_message %}<div style="background:#F0F4F8;padding:16px;border-radius:6px;margin:16px 0"><p style="margin:0">{{ proposal_message }}</p></div>{% endif %}
+<p>Please log in to your MediQueue account to <strong>accept or decline</strong> this slot.</p>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Dashboard{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_doctor.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">Good day, Dr. {{ request.user.first_name }}! 👋</h1>
+      <p class="mq-page-sub">{{ today|date:"l, d F Y" }}</p>
+    </div>
+
+    <div class="mq-stats-grid">
+      <div class="mq-stat-card" style="--accent:#0B4F6C">
+        <div class="mq-stat-card-icon">📅</div>
+        <div class="mq-stat-card-val">{{ today_appts.count }}</div>
+        <div class="mq-stat-card-label">Today</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#2D9E6B">
+        <div class="mq-stat-card-icon">✅</div>
+        <div class="mq-stat-card-val">{{ stats.completed|default:0 }}</div>
+        <div class="mq-stat-card-label">Completed</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E8A020">
+        <div class="mq-stat-card-icon">🔜</div>
+        <div class="mq-stat-card-val">{{ stats.upcoming|default:0 }}</div>
+        <div class="mq-stat-card-label">Upcoming</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#D94040">
+        <div class="mq-stat-card-icon">❌</div>
+        <div class="mq-stat-card-val">{{ stats.no_shows|default:0 }}</div>
+        <div class="mq-stat-card-label">No Shows</div>
+      </div>
+    </div>
+
+    <!-- Weekly schedule strip -->
+    <div class="mq-section-header mt-4 mb-2">
+      <h3 class="mq-section-title">This Week</h3>
+      <a href="{% url 'doctor_schedule' %}" class="btn mq-btn-ghost btn-sm">Edit Schedule</a>
+    </div>
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+      {% for i, day in days %}
+      {% with sched=sched_map|default_if_none:None %}
+      <div class="mq-day-pill {% if today.weekday == i %}mq-day-pill-today{% endif %}">
+        <div class="mq-day-name">{{ day|slice:":3" }}</div>
+        {% if i in sched_map %}
+        <div class="mq-day-time small">
+          {{ sched_map|default_if_none:None }}
+        </div>
+        {% else %}
+        <div class="mq-day-off small">Off</div>
+        {% endif %}
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+
+    <!-- Today's patients -->
+    <div class="mq-section-header mb-3">
+      <h3 class="mq-section-title">Today's Patients</h3>
+      <a href="{% url 'doctor_appointments' %}?filter=today" class="btn mq-btn-ghost btn-sm">View All</a>
+    </div>
+
+    {% for appt in today_appts %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-{{ appt.status_color }}"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-bold mb-1">{{ appt.patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-1">
+              <i class="bi bi-clock"></i> {{ appt.confirmed_time_slot|default:"TBD" }}
+              &nbsp;|&nbsp;
+              {{ appt.patient.gender|default:"" }}
+              &nbsp;|&nbsp;
+              <i class="bi bi-telephone"></i> {{ appt.patient.phone|default:"—" }}
+            </p>
+            <p class="mq-text-muted small mb-0">
+              Reason: {{ appt.condition_description|truncatechars:100 }}
+            </p>
+          </div>
+          <div class="d-flex flex-column gap-2 align-items-end">
+            <span class="mq-status-badge mq-status-{{ appt.status }}">
+              {{ appt.get_status_display }}
+            </span>
+            {% if appt.status == 'confirmed' %}
+            <a href="{% url 'mark_appointment' appt.pk 'completed' %}"
+               class="btn mq-btn-success btn-sm"
+               onclick="return confirm('Mark as completed?')">✅ Done</a>
+            <a href="{% url 'mark_appointment' appt.pk 'no_show' %}"
+               class="btn btn-outline-secondary btn-sm"
+               onclick="return confirm('Mark as no-show?')">No Show</a>
+            {% endif %}
+          </div>
+        </div>
+        {% if appt.doctor_note %}
+        <div class="mq-condition-box mt-2">
+          <small class="text-muted fw-bold">Doctor Note:</small><br>
+          {{ appt.doctor_note }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">📅</div>
+      <p>No patients today.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

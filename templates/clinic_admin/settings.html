@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}Clinic Settings{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">⚙️ Clinic Settings</h1>
+    </div>
+
+    <div class="mq-card" style="max-width:700px">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-4">Update Clinic Profile</h5>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% for field in form %}
+          <div class="mq-field">
+            <label class="mq-label">{{ field.label }}</label>
+            {% render_field field class="form-control mq-input" %}
+            {% if field.errors %}<div class="mq-field-error">{{ field.errors.0 }}</div>{% endif %}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn mq-btn-primary px-5 mt-2">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}My Schedule{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_doctor.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">🕐 My Weekly Schedule</h1>
+      <p class="mq-page-sub">Set your working hours. Patients can only book during these times.</p>
+    </div>
+
+    {% for i, day in schedules|items %}
+    {% endfor %}
+
+    {% for day_idx, day_name in days %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="fw-bold mb-0
+              {% if today.weekday == day_idx %}text-primary{% endif %}">
+              {{ day_name }}
+              {% if today.weekday == day_idx %}
+              <span class="badge bg-primary ms-2 small">Today</span>
+              {% endif %}
+            </h5>
+            {% if day_idx in schedules and schedules|dictsort:day_idx %}
+            <p class="text-success small mb-0">
+              <i class="bi bi-check-circle-fill"></i>
+              Working hours set
+            </p>
+            {% else %}
+            <p class="text-muted small mb-0">Not scheduled</p>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2">
+            <!-- Set hours form -->
+            <button class="btn mq-btn-primary btn-sm"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#setHours{{ day_idx }}">
+              Set Hours
+            </button>
+            {% if day_idx in schedules %}
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="remove">
+              <input type="hidden" name="day"    value="{{ day_idx }}">
+              <button type="submit" class="btn mq-btn-danger btn-sm"
+                      onclick="return confirm('Remove schedule for {{ day_name }}?')">
+                Remove
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        <!-- Collapse form -->
+        <div class="collapse mt-3" id="setHours{{ day_idx }}">
+          <form method="post" class="d-flex gap-3 align-items-end flex-wrap">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="set">
+            <input type="hidden" name="day"    value="{{ day_idx }}">
+            <div>
+              <label class="mq-label">Start Time</label>
+              <select name="start_time" class="form-select mq-input" style="width:140px">
+                {% for t in times %}
+                <option value="{{ t }}" {% if t == "08:00" %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="mq-label">End Time</label>
+              <select name="end_time" class="form-select mq-input" style="width:140px">
+                {% for t in times %}
+                <option value="{{ t }}" {% if t == "17:00" %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" class="btn mq-btn-success">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

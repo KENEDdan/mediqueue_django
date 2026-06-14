@@ -1,0 +1,15 @@
+{% extends 'emails/base_email.html' %}
+{% block body %}
+<h2>{{ title }}</h2>
+<p>Hi <strong>{{ name }}</strong>,</p>
+<div style="background:#F0F4F8;border-radius:8px;padding:16px;margin:16px 0">
+  <p style="margin:0;white-space:pre-line">{{ message }}</p>
+</div>
+{% if link_url %}
+<div style="text-align:center;margin:24px 0">
+  <a href="{{ link_url }}" style="background:#0B4F6C;color:#fff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:bold">
+    View in MediQueue →
+  </a>
+</div>
+{% endif %}
+{% endblock %}

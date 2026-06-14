@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Pending Approvals{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_superadmin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">⏳ Pending Clinic Approvals</h1>
+      <p class="mq-page-sub">Review each clinic's documents before approving or rejecting. Approved clinics receive their 30-day free trial immediately.</p>
+    </div>
+
+    {% if not clinics %}
+    <div class="mq-empty-state"><div class="mq-empty-icon">✅</div><p>No pending clinics — all caught up!</p></div>
+    {% endif %}
+
+    {% for clinic in clinics %}
+    <div class="mq-card mq-pending-clinic-card mb-4">
+      <div class="mq-card-accent-bar mq-bar-warning"></div>
+      <div class="mq-card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <h4 class="fw-bold">{{ clinic.name }}</h4>
+            {% for staff in clinic.staff.all %}
+            {% if staff.role == 'clinic_admin' %}
+            <p class="mq-text-muted mb-1">
+              Admin: <strong>{{ staff.full_name }}</strong> &nbsp;|&nbsp;
+              <i class="bi bi-envelope"></i> {{ staff.email }}
+            </p>
+            {% endif %}
+            {% endfor %}
+            <p class="mq-text-muted mb-1">
+              <i class="bi bi-telephone"></i> {{ clinic.phone|default:"—" }} &nbsp;|&nbsp;
+              <i class="bi bi-geo-alt"></i> {{ clinic.address|default:"—" }}
+            </p>
+            <p class="mq-text-muted mb-2">
+              Registered: {{ clinic.created_at|date:"d M Y H:i" }} &nbsp;|&nbsp;
+              Plan: <strong>{{ clinic.get_subscription_plan_display }}</strong> /
+              {{ clinic.get_billing_cycle_display }}
+            </p>
+
+            <!-- Documents -->
+            <div class="mb-3">
+              <p class="fw-semibold mb-2"><i class="bi bi-file-earmark-text"></i> Uploaded Documents:</p>
+              {% for doc in clinic.documents.all %}
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="mq-doc-tag">{{ doc.get_doc_type_display }}</span>
+                <span class="small text-muted">{{ doc.file_name }}</span>
+                <a href="{{ doc.file.url }}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2">
+                  <i class="bi bi-eye"></i> View
+                </a>
+                <a href="{{ doc.file.url }}" download class="btn btn-outline-secondary btn-sm py-0 px-2">
+                  <i class="bi bi-download"></i>
+                </a>
+              </div>
+              {% empty %}
+              <span class="text-danger"><i class="bi bi-exclamation-triangle"></i> No documents uploaded</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="col-md-4 d-flex flex-column gap-2 justify-content-start">
+            <a href="{% url 'superadmin:approve_clinic' clinic.pk %}"
+               class="btn mq-btn-success">
+              <i class="bi bi-check-circle-fill"></i> Approve Clinic
+            </a>
+            <a href="{% url 'superadmin:reject_clinic' clinic.pk %}"
+               class="btn mq-btn-danger">
+              <i class="bi bi-x-circle-fill"></i> Reject Clinic
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

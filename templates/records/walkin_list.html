@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Walk-in Patients{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header d-flex justify-content-between">
+      <div>
+        <h1 class="mq-page-title">🚶 Walk-in Patient Registry</h1>
+        <p class="mq-page-sub">{{ clinic.name }} — patients registered without MediQueue accounts</p>
+      </div>
+      <a href="{% url 'walkin_patient_create' %}" class="btn mq-btn-primary">
+        + Register Walk-in Patient
+      </a>
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="d-flex gap-2 mb-4">
+      <input type="text" name="q" value="{{ search }}" class="form-control mq-input"
+             placeholder="🔍 Search by patient name..." style="max-width:400px">
+      <button type="submit" class="btn mq-btn-primary">Search</button>
+      {% if search %}
+      <a href="{% url 'walkin_patient_list' %}" class="btn mq-btn-ghost">Clear</a>
+      {% endif %}
+    </form>
+
+    {% for patient in patients %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-primary"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="fw-bold mb-1">{{ patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-0">
+              {% if patient.gender %}{{ patient.gender }} &nbsp;|&nbsp;{% endif %}
+              {% if patient.age %}Age: {{ patient.age }} &nbsp;|&nbsp;{% endif %}
+              <i class="bi bi-telephone"></i> {{ patient.phone|default:"—" }}
+              {% if patient.blood_group != 'Unknown' %}
+              &nbsp;|&nbsp; Blood: <strong>{{ patient.blood_group }}</strong>
+              {% endif %}
+            </p>
+            <p class="mq-text-muted small mb-0">
+              {{ patient.visits.count }} visit(s) &nbsp;|&nbsp;
+              Registered: {{ patient.created_at|date:"d M Y" }}
+            </p>
+          </div>
+          <a href="{% url 'walkin_patient_detail' patient.pk %}"
+             class="btn mq-btn-primary btn-sm">
+            View Records →
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">🚶</div>
+      <p>No walk-in patients registered yet.</p>
+      <a href="{% url 'walkin_patient_create' %}" class="btn mq-btn-primary mt-2">
+        Register First Walk-in Patient
+      </a>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

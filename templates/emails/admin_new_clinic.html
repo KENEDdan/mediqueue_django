@@ -1,0 +1,13 @@
+{% extends 'emails/base_email.html' %}
+{% block body %}
+<h2 style="color:#1A2330">New Clinic Awaiting Approval</h2>
+<p style="color:#5A6A7A">A new clinic has registered on <strong>{{ app_name }}</strong>.</p>
+<table style="width:100%;border-collapse:collapse;margin:20px 0;">
+  <tr style="background:#F0F4F8"><td style="padding:10px 14px;font-weight:bold;width:40%">Clinic</td><td style="padding:10px 14px">{{ clinic.name }}</td></tr>
+  <tr><td style="padding:10px 14px;font-weight:bold">Admin</td><td style="padding:10px 14px">{{ admin.full_name }} ({{ admin.email }})</td></tr>
+  <tr style="background:#F0F4F8"><td style="padding:10px 14px;font-weight:bold">Phone</td><td style="padding:10px 14px">{{ clinic.phone }}</td></tr>
+  <tr><td style="padding:10px 14px;font-weight:bold">Plan</td><td style="padding:10px 14px">{{ clinic.get_subscription_plan_display }}</td></tr>
+  <tr style="background:#F0F4F8"><td style="padding:10px 14px;font-weight:bold">Documents</td><td style="padding:10px 14px">{% for doc in docs %}{{ doc.get_doc_type_display }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}</td></tr>
+</table>
+<p style="color:#5A6A7A">Please log in to the Super Admin panel → Pending Approvals to review and approve or reject this registration.</p>
+{% endblock %}

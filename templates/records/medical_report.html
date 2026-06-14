@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}Medical Report{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_doctor.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">📋 Medical Report</h1>
+      <p class="mq-page-sub">
+        Patient: <strong>{{ appt.patient.full_name }}</strong> &nbsp;|&nbsp;
+        Date: {{ appt.confirmed_date }}
+      </p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-4">
+
+        <!-- Vitals -->
+        <div class="col-12">
+          <div class="mq-card">
+            <div class="mq-card-body">
+              <h5 class="fw-bold mb-4">📊 Vitals</h5>
+              <div class="row g-3">
+                {% for fname, label, placeholder in vitals %}
+                <div class="col-md-4">
+                  <div class="mq-field">
+                    <label class="mq-label">{{ label }}</label>
+                    <input type="text" name="{{ fname }}" class="form-control mq-input"
+                           placeholder="{{ placeholder }}"
+                           value="{{ report|default_if_none:''|default:'' }}">
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clinical findings -->
+        <div class="col-12">
+          <div class="mq-card">
+            <div class="mq-card-body">
+              <h5 class="fw-bold mb-4">🩺 Clinical Information</h5>
+
+              <div class="mq-field">
+                <label class="mq-label">Chief Complaint <span class="text-danger">*</span></label>
+                <textarea name="chief_complaint" rows="2" class="form-control mq-input"
+                          placeholder="Patient's main complaint in their own words" required>{% if report %}{{ report.chief_complaint }}{% else %}{{ appt.condition_description }}{% endif %}</textarea>
+              </div>
+
+              <div class="mq-field">
+                <label class="mq-label">History of Present Illness</label>
+                <textarea name="history" rows="3" class="form-control mq-input"
+                          placeholder="Duration, onset, character, associated symptoms...">{% if report %}{{ report.history }}{% endif %}</textarea>
+              </div>
+
+              <div class="mq-field">
+                <label class="mq-label">Examination Findings</label>
+                <textarea name="examination_notes" rows="3" class="form-control mq-input"
+                          placeholder="Physical examination findings...">{% if report %}{{ report.examination_notes }}{% endif %}</textarea>
+              </div>
+
+              <div class="mq-field">
+                <label class="mq-label">Diagnosis / Impression <span class="text-danger">*</span></label>
+                <textarea name="diagnosis" rows="2" class="form-control mq-input"
+                          placeholder="Primary and secondary diagnoses..." required>{% if report %}{{ report.diagnosis }}{% endif %}</textarea>
+              </div>
+
+              <div class="mq-field">
+                <label class="mq-label">Treatment Plan</label>
+                <textarea name="treatment_plan" rows="3" class="form-control mq-input"
+                          placeholder="Management plan, procedures, referrals...">{% if report %}{{ report.treatment_plan }}{% endif %}</textarea>
+              </div>
+
+              <div class="mq-field">
+                <label class="mq-label">Prescriptions / Medications</label>
+                <textarea name="prescriptions" rows="3" class="form-control mq-input"
+                          placeholder="Drug name — dose — frequency — duration">{% if report %}{{ report.prescriptions }}{% endif %}</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Follow-up -->
+        <div class="col-12">
+          <div class="mq-card">
+            <div class="mq-card-body">
+              <h5 class="fw-bold mb-4">📅 Follow-up</h5>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="mq-field">
+                    <label class="mq-label">Follow-up Date</label>
+                    <input type="date" name="follow_up_date" class="form-control mq-input"
+                           value="{% if report and report.follow_up_date %}{{ report.follow_up_date }}{% endif %}">
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="mq-field">
+                    <label class="mq-label">Follow-up Instructions</label>
+                    <textarea name="follow_up_notes" rows="2" class="form-control mq-input"
+                              placeholder="What to watch for, return if...">{% if report %}{{ report.follow_up_notes }}{% endif %}</textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="mq-field">
+                <label class="mq-label">Additional Notes</label>
+                <textarea name="additional_notes" rows="2" class="form-control mq-input"
+                          placeholder="Any other relevant information...">{% if report %}{{ report.additional_notes }}{% endif %}</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Share option -->
+        <div class="col-12">
+          <div class="mq-card">
+            <div class="mq-card-body d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="fw-bold mb-1">Share with Patient</h5>
+                <p class="mq-text-muted small mb-0">
+                  Patient will receive an email and can view this report in their account.
+                </p>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="share"
+                       id="shareToggle" style="width:50px;height:26px"
+                       {% if not report or report.is_shared_with_patient %}checked{% endif %}>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="d-flex gap-3">
+            <a href="{% url 'doctor_appointments' %}" class="btn mq-btn-ghost px-4">Cancel</a>
+            <button type="submit" class="btn mq-btn-primary px-5 fw-bold py-3">
+              <i class="bi bi-save-fill"></i>
+              {% if report %}Update Report{% else %}Save & Share Report{% endif %}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </main>
+</div>
+{% endblock %}

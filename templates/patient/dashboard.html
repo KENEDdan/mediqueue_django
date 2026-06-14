@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}My Appointments{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_patient.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">Welcome, {{ request.user.first_name }}! 👋</h1>
+      <p class="mq-page-sub">Here's your appointment summary</p>
+    </div>
+
+    <div class="mq-stats-grid">
+      <div class="mq-stat-card" style="--accent:#0B4F6C">
+        <div class="mq-stat-card-icon">📊</div>
+        <div class="mq-stat-card-val">{{ appts.count }}</div>
+        <div class="mq-stat-card-label">Total</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E8A020">
+        <div class="mq-stat-card-icon">⏳</div>
+        <div class="mq-stat-card-val">{{ counts.pending }}</div>
+        <div class="mq-stat-card-label">Pending</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#2D9E6B">
+        <div class="mq-stat-card-icon">✅</div>
+        <div class="mq-stat-card-val">{{ counts.confirmed }}</div>
+        <div class="mq-stat-card-label">Confirmed</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#5A6A7A">
+        <div class="mq-stat-card-icon">🏁</div>
+        <div class="mq-stat-card-val">{{ counts.completed }}</div>
+        <div class="mq-stat-card-label">Completed</div>
+      </div>
+    </div>
+
+    <div class="mq-section-header mt-4 mb-3">
+      <h3 class="mq-section-title">My Appointments</h3>
+      <a href="{% url 'book_appointment' %}" class="btn mq-btn-accent btn-sm">+ Book New</a>
+    </div>
+
+    {% for appt in appts %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-{{ appt.status_color }}"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-bold mb-1">{{ appt.clinic.name }}</h5>
+            <p class="mq-text-muted small mb-1">{{ appt.condition_description|truncatechars:100 }}</p>
+            {% if appt.status == 'confirmed' and appt.doctor %}
+            <p class="text-success small mb-1">
+              <i class="bi bi-person-badge"></i>
+              Dr. {{ appt.doctor.user.full_name }} — {{ appt.doctor.specialization.name }}
+            </p>
+            <p class="text-success small mb-0">
+              <i class="bi bi-calendar-check"></i>
+              {{ appt.confirmed_date }} at {{ appt.confirmed_time_slot|default:"TBD" }}
+            </p>
+            {% elif appt.status == 'cancelled' %}
+            <p class="text-danger small mb-0">
+              <i class="bi bi-x-circle"></i> {{ appt.rejection_note|default:"Cancelled" }}
+            </p>
+            {% else %}
+            <p class="mq-text-muted small mb-0">
+              Preferred: {{ appt.preferred_date }} ({{ appt.preferred_time_of_day }})
+            </p>
+            {% endif %}
+          </div>
+          <div class="text-end">
+            <span class="mq-status-badge mq-status-{{ appt.status }}">
+              {{ appt.get_status_display }}
+            </span>
+            <p class="mq-text-muted small mt-1">{{ appt.requested_at|date:"d M Y" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">📅</div>
+      <p>No appointments yet.</p>
+      <a href="{% url 'book_appointment' %}" class="btn mq-btn-accent mt-2">Book Your First Appointment</a>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- NAV -->
+<nav class="mq-topnav">
+  <div class="mq-topnav-inner">
+    <a class="mq-topnav-brand" href="{% url 'landing' %}">🏥 MediQueue</a>
+    <div class="mq-topnav-links d-none d-md-flex">
+      <a href="#clinics">Browse Clinics</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="mq-topnav-actions">
+      <a href="{% url 'register_clinic' %}" class="btn mq-btn-outline-white btn-sm">Register Clinic</a>
+      <a href="{% url 'staff_login' %}" class="btn mq-btn-outline-white btn-sm">Staff Login</a>
+      <a href="{% url 'patient_login' %}" class="btn mq-btn-outline-white btn-sm">Patient Sign In</a>
+      <a href="{% url 'register_patient' %}" class="btn mq-btn-accent btn-sm">Get Started Free →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="mq-hero">
+  <div class="mq-hero-inner text-center">
+    <h1 class="mq-hero-title">The Smarter Way to<br>Manage Clinic Appointments</h1>
+    <p class="mq-hero-sub">Browse clinics and hospitals, discover their services,<br>and get matched with the right doctor in minutes.</p>
+    <div class="mq-hero-btns">
+      <a href="{% url 'register_patient' %}" class="btn mq-btn-accent btn-lg px-5">📅 Book an Appointment</a>
+      <a href="{% url 'register_clinic' %}" class="btn mq-btn-outline-white btn-lg px-5">Register Your Clinic →</a>
+    </div>
+    <div class="mq-trust-badges mt-4">
+      <span class="mq-badge">🔒 Secure & Private</span>
+      <span class="mq-badge">🆓 Free for Patients</span>
+      <span class="mq-badge">⚡ Instant Booking</span>
+      <span class="mq-badge">🏥 Verified Clinics</span>
+    </div>
+  </div>
+</section>
+
+<!-- Registered Hospitals Showcase -->
+<section class="py-5" style="background:var(--mq-surface2)">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold display-6">Hospitals on MediQueue</h2>
+      <p class="mq-text-muted">Browse trusted hospitals and clinics ready to receive your appointments</p>
+    </div>
+
+    <div class="row g-4">
+      {% for hospital in hospitals %}
+      <div class="col-md-4 col-lg-3">
+        <a href="{% url 'clinic_detail' slug=hospital.slug %}" class="mq-hospital-card">
+          <div class="mq-hospital-photo">
+            {% with primary_photo=hospital.photos.first %}
+            {% if primary_photo %}
+              <img src="{{ primary_photo.image.url }}" alt="{{ hospital.name }}">
+            {% elif hospital.logo %}
+              <img src="{{ hospital.logo.url }}" alt="{{ hospital.name }}">
+            {% else %}
+              <img src="https://source.unsplash.com/600x400/?hospital,clinic&sig={{ hospital.pk }}" alt="{{ hospital.name }}">
+            {% endif %}
+            {% endwith %}
+            {% if hospital.emergency_services %}
+            <span class="mq-hospital-badge">🚨 Emergency</span>
+            {% endif %}
+          </div>
+          <div class="mq-hospital-info">
+            <h5 class="fw-bold mb-1">{{ hospital.name }}</h5>
+            <p class="mq-text-muted small mb-2">
+              <i class="bi bi-geo-alt"></i> {{ hospital.city|default:hospital.address|truncatechars:30 }}
+            </p>
+            <div class="d-flex gap-1 flex-wrap">
+              {% for svc in hospital.services.all|slice:":3" %}
+              <span class="badge bg-light text-dark border" style="font-size:10px">
+                {{ svc.specialization.icon }} {{ svc.specialization.name }}
+              </span>
+              {% endfor %}
+            </div>
+            {% if hospital.average_rating %}
+            <div class="mt-2" style="color:#E8A020;font-size:13px">
+              ★ {{ hospital.average_rating }} <span class="mq-text-muted">/ 5</span>
+            </div>
+            {% endif %}
+          </div>
+        </a>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center text-muted py-5">
+        <p>New hospitals are joining MediQueue soon — check back shortly!</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if hospitals %}
+    <div class="text-center mt-4">
+      <a href="{% url 'book_appointment' %}" class="btn mq-btn-primary px-5 py-3 fw-bold">
+        Browse All Hospitals →
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="mq-stats-bar">
+  <div class="container">
+    <div class="row text-center">
+      {% for icon, val, label, color in stats_list %}
+      <div class="col-6 col-md-3 mq-stat-cell">
+        <div class="mq-stat-icon">{{ icon }}</div>
+        <div class="mq-stat-val" style="color:{{ color }}">{{ val|intcomma }}</div>
+        <div class="mq-stat-label">{{ label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="mq-section">
+  <div class="container">
+    <h2 class="mq-section-title text-center">How MediQueue Works</h2>
+    <p class="mq-section-sub text-center">Get the care you need in three simple steps</p>
+    <div class="row g-4 mt-3">
+      {% for num, icon, title, desc in steps %}
+      <div class="col-md-4">
+        <div class="mq-step-card">
+          <div class="mq-step-num">{{ num }}</div>
+          <div class="mq-step-icon">{{ icon }}</div>
+          <h5 class="mq-step-title">{{ title }}</h5>
+          <p class="mq-step-desc">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CLINICS -->
+<section id="clinics" class="mq-section mq-section-alt">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+      <div>
+        <h2 class="mq-section-title mb-1">🏥 Clinics & Hospitals</h2>
+        <p class="mq-section-sub mb-0">Click any clinic to see their profile, services, and doctors</p>
+      </div>
+    </div>
+    <!-- Search -->
+    <form method="get" class="d-flex gap-2 mb-4">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-control mq-search-input"
+             placeholder="🔍 Search by clinic name...">
+      <button type="submit" class="btn mq-btn-primary">Search</button>
+      <a href="{% url 'landing' %}" class="btn mq-btn-ghost">Show All</a>
+    </form>
+
+    <div class="row g-4">
+      {% for clinic in clinics %}
+      <div class="col-md-6 col-lg-4">
+        <div class="mq-clinic-card">
+          <div class="mq-clinic-card-bar" style="background:var(--mq-primary)"></div>
+          <div class="mq-clinic-card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="mq-clinic-name mb-0">{{ clinic.name }}</h5>
+              <span class="mq-badge-plan">{{ clinic.get_subscription_plan_display }}</span>
+            </div>
+            {% if clinic.address %}<p class="mq-clinic-info"><i class="bi bi-geo-alt"></i> {{ clinic.address }}</p>{% endif %}
+            {% if clinic.phone %}<p class="mq-clinic-info"><i class="bi bi-telephone"></i> {{ clinic.phone }}</p>{% endif %}
+            <p class="mq-clinic-doctors"><i class="bi bi-person-badge"></i> {{ clinic.get_doctor_count }} doctor{{ clinic.get_doctor_count|pluralize }}</p>
+            <div class="mq-clinic-services">
+              {% for name in clinic.get_service_names|slice:":5" %}
+              <span class="mq-service-tag">{{ name }}</span>
+              {% endfor %}
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <a href="{% url 'clinic_detail' clinic.slug %}" class="btn mq-btn-primary btn-sm flex-fill">View Profile</a>
+              <a href="{% url 'book_appointment' %}?clinic={{ clinic.pk }}" class="btn mq-btn-accent btn-sm flex-fill">📅 Book</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="mq-empty-card">🔍 No clinics found. Be the first to <a href="{% url 'register_clinic' %}">register your clinic</a>!</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="mq-pricing-section">
+  <div class="container">
+    <h2 class="text-white text-center fw-bold fs-2 mb-2">Simple, Transparent Pricing</h2>
+    <p class="text-center mb-5" style="color:#A8D4E8">Start free for 30 days after selecting a plan. Upgrade anytime.</p>
+    <div class="row g-4 justify-content-center">
+      {% for pk, plan in plans.items %}
+      <div class="col-md-4">
+        <div class="mq-plan-card {% if plan.popular %}mq-plan-popular{% endif %}">
+          {% if plan.popular %}<div class="mq-popular-badge">⭐ MOST POPULAR</div>{% endif %}
+          <div class="mq-plan-icon">{{ plan.icon }}</div>
+          <h4 class="mq-plan-name">{{ plan.name }}</h4>
+          <p class="mq-plan-tagline">{{ plan.tagline }}</p>
+          <div class="mq-plan-price">${{ plan.price_monthly }}</div>
+          <div class="mq-plan-period">per month • ${{ plan.price_annual }}/year</div>
+          <hr style="border-color:rgba(255,255,255,.2)">
+          <ul class="mq-plan-features">
+            {% for feat in plan.features %}
+            <li><i class="bi bi-check-circle-fill text-success"></i> {{ feat }}</li>
+            {% endfor %}
+          </ul>
+          <a href="{% url 'register_clinic' %}?plan={{ pk }}" class="btn mq-btn-white w-100 mt-3">
+            Get {{ plan.name }} + Free Trial
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="mq-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="mq-footer-brand">🏥 MediQueue</div>
+        <p class="mq-footer-tagline">Connecting patients with the right care.</p>
+      </div>
+      <div class="col-md-2 mb-4"><h6 class="mq-footer-head">For Patients</h6>
+        <ul class="mq-footer-links">
+          <li><a href="{% url 'register_patient' %}">Create Account</a></li>
+          <li><a href="#clinics">Browse Clinics</a></li>
+          <li><a href="{% url 'book_appointment' %}">Book Appointment</a></li>
+        </ul>
+      </div>
+      <div class="col-md-2 mb-4"><h6 class="mq-footer-head">For Clinics</h6>
+        <ul class="mq-footer-links">
+          <li><a href="{% url 'register_clinic' %}">Register Clinic</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="{% url 'staff_login' %}">Staff Portal</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4 mb-4"><h6 class="mq-footer-head">Platform</h6>
+        <ul class="mq-footer-links">
+          <li><a href="#">About MediQueue</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mq-footer-bottom">© 2025 MediQueue — All rights reserved — Built for Africa</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fix stats display - pass from view context
+const statsData = [
+  ['🏥', '{{ stats.clinics }}', 'Clinics & Hospitals', '#1A7A9E'],
+  ['👨‍⚕️', '{{ stats.doctors }}', 'Registered Doctors', '#E05C2A'],
+  ['🧑', '{{ stats.patients }}', 'Patients Served', '#2D9E6B'],
+  ['📅', '{{ stats.appointments }}', 'Appointments Booked', '#E8A020'],
+];
+// Stats are rendered inline via template already
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<!-- SEO Meta Tags -->
+<meta name="description" content="MediQueue — The smarter way to manage clinic appointments. Find clinics, book doctors, and manage your health records online.">
+<meta name="keywords" content="clinic appointments, doctor booking, medical records, hospital management, Africa healthcare">
+<meta name="author" content="MediQueue">
+
+<!-- Open Graph (Facebook/WhatsApp sharing) -->
+<meta property="og:title" content="MediQueue — Smart Clinic Appointment Management">
+<meta property="og:description" content="Find clinics, book appointments, and manage your health records online.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mediqueue.health">
+<meta property="og:image" content="https://mediqueue.health/static/og-image.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MediQueue">
+<meta name="twitter:description" content="Smart clinic appointment management for Africa.">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="https://mediqueue.health">
+
+<!-- Structured Data (Google Rich Results) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MediQueue",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "Web",
+  "description": "Clinic appointment management platform connecting patients with healthcare providers.",
+  "offers": {
+    "@type": "Offer",
+    "price": "19",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+{% endblock %}

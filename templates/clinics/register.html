@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}Register Your Clinic{% endblock %}
+
+{% block content %}
+<div class="mq-register-layout">
+
+  <!-- Left Brand Panel -->
+  <div class="mq-auth-brand">
+    <div class="mq-auth-brand-inner">
+      <div class="mq-auth-logo">🏥</div>
+      <h1 class="mq-auth-brand-name">Join MediQueue</h1>
+      <p class="mq-auth-brand-sub">Register Your Hospital or Clinic</p>
+      <div class="mq-auth-pills">
+        <span class="mq-auth-pill">🔐 Secure Patient Management</span>
+        <span class="mq-auth-pill">📅 Online Appointment Booking</span>
+        <span class="mq-auth-pill">👨‍⚕️ Doctor Scheduling</span>
+        <span class="mq-auth-pill">📊 Analytics & Reports</span>
+      </div>
+      <div class="mq-auth-hint mt-4">
+        <p class="small" style="color:rgba(255,255,255,.75)">
+          ✅ 30-day free trial after selecting a plan<br>
+          💳 Card required — nothing charged during trial<br>
+          📧 Superadmin reviews docs before activation
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Form Panel -->
+  <div class="mq-register-form-panel">
+    <form method="post" enctype="multipart/form-data" novalidate class="mq-register-form">
+      {% csrf_token %}
+
+      <!-- SECTION 1: Clinic Info -->
+      <div class="mq-form-section">
+        <h3 class="mq-form-section-title">
+          <i class="bi bi-hospital"></i> Clinic Information
+        </h3>
+
+        <div class="mq-field">
+          <label class="mq-label">Clinic / Hospital Name <span class="text-danger">*</span></label>
+          {% render_field form.clinic_name class="form-control mq-input" placeholder="City Medical Centre" %}
+          {% if form.clinic_name.errors %}<div class="mq-field-error">{{ form.clinic_name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Phone Number <span class="text-danger">*</span></label>
+          {% render_field form.clinic_phone class="form-control mq-input" placeholder="+250 7XX XXX XXX" %}
+          {% if form.clinic_phone.errors %}<div class="mq-field-error">{{ form.clinic_phone.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Clinic Email <span class="text-danger">*</span></label>
+          {% render_field form.clinic_email class="form-control mq-input" placeholder="info@clinic.com" %}
+          {% if form.clinic_email.errors %}<div class="mq-field-error">{{ form.clinic_email.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Physical Address <span class="text-danger">*</span></label>
+          {% render_field form.clinic_address class="form-control mq-input" placeholder="123 Health St, Kigali" %}
+          {% if form.clinic_address.errors %}<div class="mq-field-error">{{ form.clinic_address.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- SECTION 2: Admin Account -->
+      <div class="mq-form-section">
+        <h3 class="mq-form-section-title">
+          <i class="bi bi-person-circle"></i> Your Admin Account
+        </h3>
+
+        <div class="mq-field">
+          <label class="mq-label">Your Full Name <span class="text-danger">*</span></label>
+          {% render_field form.admin_name class="form-control mq-input" placeholder="Jane Doe" %}
+          {% if form.admin_name.errors %}<div class="mq-field-error">{{ form.admin_name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Admin Email <span class="text-danger">*</span></label>
+          {% render_field form.admin_email class="form-control mq-input" placeholder="admin@youremail.com" %}
+          {% if form.admin_email.errors %}<div class="mq-field-error">{{ form.admin_email.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Password <span class="text-danger">*</span></label>
+          {% render_field form.admin_password class="form-control mq-input" placeholder="Minimum 8 characters" %}
+          {% if form.admin_password.errors %}<div class="mq-field-error">{{ form.admin_password.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Security Question</label>
+          {% render_field form.security_question class="form-select mq-input" %}
+          {% if form.security_question.errors %}<div class="mq-field-error">{{ form.security_question.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Security Answer</label>
+          {% render_field form.security_answer class="form-control mq-input" placeholder="Answer to the question above" %}
+          {% if form.security_answer.errors %}<div class="mq-field-error">{{ form.security_answer.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- SECTION 3: Documents -->
+      <div class="mq-form-section">
+        <h3 class="mq-form-section-title">
+          <i class="bi bi-file-earmark-text"></i> Official Documents
+        </h3>
+        <div class="mq-upload-notice">
+          <i class="bi bi-info-circle-fill"></i>
+          Your clinic stays <strong>inactive</strong> until our superadmin reviews and
+          confirms your documents. You'll receive an email once approved.
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">
+            Registration Certificate <span class="text-danger">*</span>
+          </label>
+          {% render_field form.registration_cert class="form-control mq-input" %}
+          <small class="text-muted">PDF, JPG or PNG — required for approval</small>
+          {% if form.registration_cert.errors %}
+            <div class="mq-field-error">{{ form.registration_cert.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Medical License <span class="text-muted">(optional)</span></label>
+          {% render_field form.medical_license class="form-control mq-input" %}
+        </div>
+      </div>
+
+      <!-- SECTION 4: Subscription Plan -->
+      <div class="mq-form-section">
+        <h3 class="mq-form-section-title">
+          <i class="bi bi-star"></i> Choose Your Plan
+        </h3>
+        <p class="mq-text-muted small mb-3">
+          Select a plan — you get <strong>30 days free</strong> after entering your
+          card details. Nothing is charged during the trial.
+        </p>
+
+        <div class="mq-plan-selector">
+          {% for pk, plan in plans.items %}
+          <label class="mq-plan-option {% if plan.popular %}mq-plan-option-popular{% endif %}">
+            <input type="radio" name="subscription_plan" value="{{ pk }}"
+                   {% if plan.popular %}checked{% endif %}>
+            <div class="mq-plan-option-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold">{{ plan.icon }} {{ plan.name }}</span>
+                <span class="mq-plan-price-tag">${{ plan.price_monthly }}/mo</span>
+              </div>
+              <div class="text-muted small">{{ plan.tagline }}</div>
+              {% if plan.popular %}
+                <span class="mq-popular-tag">MOST POPULAR</span>
+              {% endif %}
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+
+        {% if form.subscription_plan.errors %}
+          <div class="mq-field-error mt-2">{{ form.subscription_plan.errors.0 }}</div>
+        {% endif %}
+
+        <!-- Billing Cycle -->
+        <div class="mq-field mt-3">
+          <label class="mq-label">Billing Cycle</label>
+          <div class="d-flex gap-3 flex-wrap">
+            <label class="mq-radio-pill">
+              <input type="radio" name="billing_cycle" value="monthly" checked>
+              Monthly
+            </label>
+            <label class="mq-radio-pill">
+              <input type="radio" name="billing_cycle" value="annual">
+              Annual <span class="text-success small fw-bold">(Save 17%)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 5: Card Details -->
+      <div class="mq-form-section">
+        <h3 class="mq-form-section-title">
+          <i class="bi bi-credit-card"></i> Card Details
+        </h3>
+        <div class="mq-card-notice">
+          <i class="bi bi-shield-lock-fill text-success"></i>
+          <strong>No charge during your 30-day trial.</strong> Your card activates
+          billing only after the trial ends. Cancel anytime before then.
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Cardholder Name <span class="text-danger">*</span></label>
+          {% render_field form.card_holder class="form-control mq-input" placeholder="Full name on card" %}
+          {% if form.card_holder.errors %}<div class="mq-field-error">{{ form.card_holder.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mq-field">
+          <label class="mq-label">Card Number <span class="text-danger">*</span></label>
+          {% render_field form.card_number class="form-control mq-input" id="cardNumber" placeholder="1234 5678 9012 3456" %}
+          {% if form.card_number.errors %}<div class="mq-field-error">{{ form.card_number.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="mq-field">
+              <label class="mq-label">Expiry Date <span class="text-danger">*</span></label>
+              {% render_field form.card_expiry class="form-control mq-input" placeholder="MM/YY" %}
+              {% if form.card_expiry.errors %}<div class="mq-field-error">{{ form.card_expiry.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="mq-field">
+              <label class="mq-label">CVV <span class="text-danger">*</span></label>
+              {% render_field form.card_cvv class="form-control mq-input" placeholder="•••" %}
+              {% if form.card_cvv.errors %}<div class="mq-field-error">{{ form.card_cvv.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <small class="text-muted">
+          <i class="bi bi-lock"></i>
+          Card details are encrypted and never stored in plain text on our servers.
+        </small>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn mq-btn-primary w-100 py-3 fw-bold fs-5 mb-3">
+        Register &amp; Start Free Trial →
+      </button>
+      <p class="text-center mq-text-muted small">
+        By registering you agree to our Terms of Service and Privacy Policy.
+      </p>
+      <div class="text-center mt-2 mb-4">
+        <a href="{% url 'landing' %}" class="mq-link-sm">← Back to Home</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Card number auto-formatting
+const cardInput = document.getElementById('cardNumber');
+if (cardInput) {
+  cardInput.addEventListener('input', e => {
+    let v = e.target.value.replace(/\D/g, '').slice(0, 16);
+    e.target.value = v.match(/.{1,4}/g)?.join(' ') || v;
+  });
+}
+// Expiry auto-formatting
+document.querySelectorAll('[name="card_expiry"]').forEach(el => {
+  el.addEventListener('input', e => {
+    let v = e.target.value.replace(/\D/g, '').slice(0, 4);
+    if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+    e.target.value = v;
+  });
+});
+</script>
+{% endblock %}

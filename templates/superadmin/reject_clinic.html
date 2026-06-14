@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Reject {{ clinic.name }}{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_superadmin.html' %}
+  <main class="mq-main">
+    <div class="mq-confirm-box">
+      <div class="mq-confirm-icon text-danger">✕</div>
+      <h2>Reject <strong>{{ clinic.name }}</strong>?</h2>
+      <p class="mq-text-muted">
+        The clinic admin will receive an email with your reason.<br>
+        They may re-register after addressing the issue.
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mq-field">
+          <label class="mq-label">Reason for Rejection <span class="text-danger">*</span></label>
+          <textarea name="reason" class="form-control mq-input" rows="4"
+                    placeholder="e.g. Certificate invalid, Not a licensed medical facility..."></textarea>
+        </div>
+        <div class="d-flex gap-3 justify-content-center mt-4">
+          <a href="{% url 'superadmin:pending_clinics' %}" class="btn mq-btn-ghost px-5">Cancel</a>
+          <button type="submit" class="btn mq-btn-danger px-5">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %}

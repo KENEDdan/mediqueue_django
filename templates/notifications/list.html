@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% if request.user.role == 'patient' %}{% include 'components/sidebar_patient.html' %}
+  {% elif request.user.role == 'doctor' %}{% include 'components/sidebar_doctor.html' %}
+  {% elif request.user.role == 'receptionist' %}{% include 'components/sidebar_receptionist.html' %}
+  {% elif request.user.role == 'clinic_admin' %}{% include 'components/sidebar_clinic_admin.html' %}
+  {% elif request.user.role == 'super_admin' %}{% include 'components/sidebar_superadmin.html' %}
+  {% endif %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">🔔 Notifications</h1>
+    </div>
+    {% for n in notifs %}
+    <div class="mq-card mb-2 {% if not n.is_read %}border-start border-4 border-primary{% endif %}">
+      <div class="mq-card-body py-2">
+        <a href="{% url 'mark_notification_read' n.pk %}" class="text-decoration-none text-reset">
+          <div class="d-flex justify-content-between">
+            <strong>{{ n.title }}</strong>
+            <span class="text-muted small">{{ n.created_at|date:"d M, H:i" }}</span>
+          </div>
+          <p class="mb-0 small mq-text-muted" style="white-space:pre-line">{{ n.message }}</p>
+        </a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state"><div class="mq-empty-icon">🔔</div><p>No notifications yet.</p></div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'emails/base_email.html' %}
+{% block body %}
+<h2>Appointment Update 📋</h2>
+<p style="color:#5A6A7A">Dear <strong>{{ appt.patient.full_name }}</strong>,</p>
+<p style="color:#5A6A7A">Unfortunately, your appointment at <strong>{{ appt.clinic.name }}</strong> could not be approved.</p>
+<div style="background:#FFF8F8;border-left:4px solid #D94040;padding:16px;border-radius:6px;margin:20px 0;">
+  <p style="margin:0 0 6px;font-weight:bold;color:#D94040">Reason:</p>
+  <p style="margin:0;color:#1A2330">{{ appt.rejection_note }}</p>
+</div>
+<p style="color:#5A6A7A">You are welcome to submit a new request at a different time.</p>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}All Appointments{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_receptionist.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">📋 All Appointments</h1>
+      <p class="mq-page-sub">{{ clinic.name }} — {{ appts.count }} total</p>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="mq-filter-tabs mb-4">
+      {% for val, label in filter_options %}
+      <a href="?status={{ val }}"
+         class="mq-filter-tab {% if status == val %}active{% endif %}">
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+
+    {% for appt in appts %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-{{ appt.status_color }}"></div>
+      <div class="mq-card-body">
+        <div class="row align-items-center">
+          <div class="col-md-5">
+            <h5 class="fw-bold mb-1">{{ appt.patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-0">
+              {{ appt.condition_description|truncatechars:80 }}
+            </p>
+          </div>
+          <div class="col-md-3">
+            {% if appt.doctor %}
+            <p class="small mb-0">
+              <i class="bi bi-person-badge"></i> Dr. {{ appt.doctor.user.full_name }}
+            </p>
+            {% else %}
+            <p class="small text-muted mb-0">Unassigned</p>
+            {% endif %}
+            <p class="small text-muted mb-0">
+              <i class="bi bi-calendar3"></i>
+              {{ appt.confirmed_date|default:appt.preferred_date }}
+              {% if appt.confirmed_time_slot %}at {{ appt.confirmed_time_slot }}{% endif %}
+            </p>
+          </div>
+          <div class="col-md-2 text-center">
+            <span class="mq-status-badge mq-status-{{ appt.status }}">
+              {{ appt.get_status_display }}
+            </span>
+          </div>
+          <div class="col-md-2 text-muted small text-end">
+            {{ appt.requested_at|date:"d M Y" }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">📋</div>
+      <p>No appointments found for this filter.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

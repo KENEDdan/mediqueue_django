@@ -1,0 +1,13 @@
+{# templates/emails/appointment_confirmed.html #}
+{% extends 'emails/base_email.html' %}
+{% block body %}
+<h2>Appointment Confirmed ✅</h2>
+<p>Dear <strong>{{ patient_name }}</strong>,</p>
+<p>Your appointment at <strong>{{ clinic_name }}</strong> is <span style="color:#2D9E6B;font-weight:bold">confirmed</span>.</p>
+<table style="width:100%;border-collapse:collapse;margin:20px 0">
+  <tr style="background:#F0F4F8"><td style="padding:10px 14px;font-weight:bold;width:40%">Doctor</td><td style="padding:10px 14px">Dr. {{ doctor_name }}</td></tr>
+  <tr><td style="padding:10px 14px;font-weight:bold">Date</td><td style="padding:10px 14px">{{ confirmed_date }}</td></tr>
+  <tr style="background:#F0F4F8"><td style="padding:10px 14px;font-weight:bold">Time</td><td style="padding:10px 14px">{{ confirmed_time }}</td></tr>
+</table>
+<p style="color:#5A6A7A">Please arrive 10 minutes early and bring any relevant medical documents.</p>
+{% endblock %}

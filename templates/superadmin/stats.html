@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Platform Statistics{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_superadmin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">📊 Platform Statistics</h1>
+    </div>
+
+    <!-- Appointments by status -->
+    <h3 class="mq-section-title mb-3">Appointments by Status</h3>
+    <div class="mq-stats-grid mb-4">
+      {% for status, count in appts_by_status.items %}
+      <div class="mq-stat-card" style="--accent:var(--mq-primary)">
+        <div class="mq-stat-card-icon">📅</div>
+        <div class="mq-stat-card-val">{{ count }}</div>
+        <div class="mq-stat-card-label">{{ status|title }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Clinics by plan -->
+    <h3 class="mq-section-title mb-3">Clinics by Subscription Plan</h3>
+    <div class="mq-stats-grid mb-4">
+      {% for plan, count in clinics_by_plan.items %}
+      <div class="mq-stat-card" style="--accent:var(--mq-accent)">
+        <div class="mq-stat-card-icon">🏥</div>
+        <div class="mq-stat-card-val">{{ count }}</div>
+        <div class="mq-stat-card-label">{{ plan|title }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Revenue estimate -->
+    <div class="mq-card" style="max-width:400px">
+      <div class="mq-card-body text-center py-4">
+        <div style="font-size:40px">💰</div>
+        <div style="font-size:36px;font-weight:900;color:var(--mq-success)">${{ total_revenue_estimate }}</div>
+        <div class="mq-text-muted">Estimated Monthly Revenue</div>
+        <small class="text-muted">Based on active paid plans</small>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

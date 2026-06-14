@@ -1,0 +1,11 @@
+{% extends 'emails/base_email.html' %}
+{% block body %}
+<h2 style="color:#1A2330">Registration Update</h2>
+<p style="color:#5A6A7A">Dear <strong>{{ admin.full_name }}</strong>,</p>
+<p style="color:#5A6A7A">After reviewing your registration for <strong>{{ clinic.name }}</strong>, we are unable to approve it at this time.</p>
+<div style="background:#FFF8F8;border-left:4px solid #D94040;padding:16px;border-radius:6px;margin:20px 0;">
+  <p style="margin:0 0 6px;font-weight:bold;color:#D94040">Reason:</p>
+  <p style="margin:0;color:#1A2330">{{ reason }}</p>
+</div>
+<p style="color:#5A6A7A">You are welcome to re-register after addressing the above. Contact support if you believe this is an error.</p>
+{% endblock %}

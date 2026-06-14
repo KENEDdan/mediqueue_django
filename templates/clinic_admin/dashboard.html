@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Clinic Dashboard{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">Clinic Admin Dashboard</h1>
+      <p class="mq-page-sub">{{ clinic.name }}</p>
+    </div>
+
+    <!-- Subscription Banner -->
+    {% if days_remaining <= 7 and days_remaining > 0 %}
+    <div class="alert mq-alert-warning d-flex justify-content-between align-items-center mb-4">
+      <span><i class="bi bi-exclamation-triangle-fill"></i> Your <strong>{{ clinic.get_subscription_plan_display }}</strong> plan expires in <strong>{{ days_remaining }} days</strong>.</span>
+      <a href="{% url 'subscription_page' %}" class="btn mq-btn-white btn-sm">Manage →</a>
+    </div>
+    {% elif days_remaining == 0 %}
+    <div class="alert alert-danger d-flex justify-content-between align-items-center mb-4">
+      <span><i class="bi bi-x-circle-fill"></i> Your subscription has <strong>expired</strong>. Renew to keep access.</span>
+      <a href="{% url 'subscription_page' %}" class="btn mq-btn-white btn-sm">Renew Now →</a>
+    </div>
+    {% endif %}
+
+    <!-- Pending Doctors Alert -->
+    {% if stats.pending_doctors > 0 %}
+    <div class="alert mq-alert-info d-flex justify-content-between align-items-center mb-4">
+      <span><i class="bi bi-hourglass-split"></i> <strong>{{ stats.pending_doctors }}</strong> doctor account(s) pending approval.</span>
+      <a href="{% url 'clinic_admin_pending_doctors' %}" class="btn mq-btn-primary btn-sm">Review →</a>
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="mq-stats-grid">
+      <div class="mq-stat-card" style="--accent:#0B4F6C">
+        <div class="mq-stat-card-icon">👨‍⚕️</div>
+        <div class="mq-stat-card-val">{{ stats.doctors }}</div>
+        <div class="mq-stat-card-label">Doctors</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#1A7A9E">
+        <div class="mq-stat-card-icon">🗂️</div>
+        <div class="mq-stat-card-val">{{ stats.receptionists }}</div>
+        <div class="mq-stat-card-label">Receptionists</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E05C2A">
+        <div class="mq-stat-card-icon">🧑</div>
+        <div class="mq-stat-card-val">{{ stats.patients }}</div>
+        <div class="mq-stat-card-label">Patients</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#E8A020">
+        <div class="mq-stat-card-icon">⏳</div>
+        <div class="mq-stat-card-val">{{ stats.pending_appts }}</div>
+        <div class="mq-stat-card-label">Pending</div>
+      </div>
+      <div class="mq-stat-card" style="--accent:#2D9E6B">
+        <div class="mq-stat-card-icon">✅</div>
+        <div class="mq-stat-card-val">{{ stats.completed }}</div>
+        <div class="mq-stat-card-label">Completed</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mq-section-header mt-4">
+      <h3 class="mq-section-title">Quick Actions</h3>
+    </div>
+    <div class="d-flex gap-3 flex-wrap mb-4">
+      <a href="{% url 'add_staff' role='doctor' %}" class="btn mq-btn-primary">+ Add Doctor</a>
+      <a href="{% url 'add_staff' role='receptionist' %}" class="btn mq-btn-accent">+ Add Receptionist</a>
+      <a href="{% url 'manage_services' %}" class="btn mq-btn-ghost">🔬 Manage Services</a>
+    </div>
+
+    <!-- Recent Appointments -->
+    <h3 class="mq-section-title mb-3">Recent Appointments</h3>
+    {% for appt in recent %}
+    <div class="mq-appt-row">
+      <div class="mq-appt-status-bar mq-bar-{{ appt.status_color }}"></div>
+      <div class="mq-appt-info">
+        <span class="fw-bold">{{ appt.patient.full_name }}</span>
+        <span class="mq-text-muted small">{{ appt.preferred_date }}</span>
+      </div>
+      <div>
+        {% if appt.doctor %}<span class="small">Dr. {{ appt.doctor.user.full_name }}</span>{% endif %}
+      </div>
+      <span class="mq-status-badge mq-status-{{ appt.status }}">{{ appt.get_status_display }}</span>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state"><p>No appointments yet.</p></div>
+    {% endfor %}
+{% if show_upgrade_nudge %}
+<div class="alert mq-alert-warning d-flex justify-content-between align-items-center mb-4">
+  <span>
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    You're using <strong>{{ current_docs }}/{{ max_doctors }}</strong> doctor slots on your
+    <strong>{{ clinic.get_subscription_plan_display }}</strong> plan.
+  </span>
+  <a href="{% url 'subscription_page' %}" class="btn mq-btn-primary btn-sm">
+    Upgrade Plan →
+  </a>
+</div>
+{% endif %}
+    <div class="mq-card mb-3">
+  <div class="mq-card-body">
+    <h5 class="fw-bold mb-2">🎁 Refer Another Clinic — Earn Credit</h5>
+    <p class="mq-text-muted small">
+      Share your referral link. When a clinic signs up using your link
+      and subscribes to a paid plan, you get <strong>1 month free</strong>.
+    </p>
+    <div class="d-flex gap-2">
+      <input type="text" class="form-control mq-input"
+             value="{{ request.build_absolute_uri }}?ref={{ request.user.clinic.slug }}"
+             id="refLink" readonly>
+      <button class="btn mq-btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('refLink').value);this.textContent='Copied!'">
+        Copy
+      </button>
+    </div>
+  </div>
+</div>
+  </main>
+</div>
+{% endblock %}

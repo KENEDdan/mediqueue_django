@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Delete {{ clinic.name }}{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_superadmin.html' %}
+  <main class="mq-main">
+    <div class="mq-confirm-box">
+      <div class="mq-confirm-icon text-danger">🗑️</div>
+      <h2 class="fw-bold">Delete <strong>{{ clinic.name }}</strong>?</h2>
+      <p class="mq-text-muted">
+        This is a <strong>soft delete</strong> — all data is preserved and can be restored later.<br>
+        All staff accounts will be deactivated. The clinic will be hidden from the public.
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mq-field text-start">
+          <label class="mq-label">Reason for Deletion <span class="text-danger">*</span></label>
+          <textarea name="reason" rows="3" class="form-control mq-input"
+                    placeholder="e.g. Subscription expired and not renewed..."
+                    required></textarea>
+        </div>
+        <div class="d-flex gap-3 justify-content-center mt-4">
+          <a href="{% url 'superadmin:all_clinics' %}" class="btn mq-btn-ghost px-5">Cancel</a>
+          <button type="submit" class="btn mq-btn-danger px-5">Confirm Delete</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %}

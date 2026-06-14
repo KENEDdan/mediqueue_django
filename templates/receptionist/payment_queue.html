@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Payment Queue{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_receptionist.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">💳 Payment Queue</h1>
+      <p class="mq-page-sub">Verify patient payments to fully confirm appointments.</p>
+    </div>
+
+    {% for appt in appts %}
+    <div class="mq-card mb-4">
+      <div class="mq-card-accent-bar mq-bar-primary"></div>
+      <div class="mq-card-body">
+        <div class="row align-items-start g-3">
+          <div class="col-md-7">
+            <h5 class="fw-bold mb-1">{{ appt.patient.full_name }}</h5>
+            <p class="mq-text-muted small mb-1">
+              {% if appt.doctor %}
+              <i class="bi bi-person-badge"></i> Dr. {{ appt.doctor.user.full_name }} &nbsp;|&nbsp;
+              {% endif %}
+              <i class="bi bi-calendar3"></i> {{ appt.confirmed_date }} at {{ appt.confirmed_time_slot }}
+            </p>
+            <p class="fw-bold" style="color:var(--mq-success)">
+              {{ appt.booking_fee_currency }} {{ appt.booking_fee }}
+            </p>
+            {% if appt.payment %}
+            <p class="mq-text-muted small mb-1">
+              Method: <strong>{{ appt.payment.get_method_display }}</strong>
+              {% if appt.payment.reference %}
+              &nbsp;|&nbsp; Ref: <code>{{ appt.payment.reference }}</code>
+              {% endif %}
+            </p>
+            <p class="mq-text-muted small mb-0">
+              Submitted: {{ appt.payment.paid_at|date:"d M Y H:i" }}
+            </p>
+            {% if appt.payment.proof_of_payment %}
+            <a href="{{ appt.payment.proof_of_payment.url }}" target="_blank"
+               class="btn mq-btn-ghost btn-sm mt-2">
+              <i class="bi bi-eye"></i> View Proof of Payment
+            </a>
+            {% endif %}
+            {% endif %}
+          </div>
+          <div class="col-md-5 d-flex flex-column gap-2">
+            <a href="{% url 'verify_payment' appt.pk %}" class="btn mq-btn-primary">
+              <i class="bi bi-shield-check"></i> Review Payment
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">✅</div>
+      <p>No pending payments to verify.</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Pay Booking Fee{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_patient.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">💳 Pay Booking Fee</h1>
+      <p class="mq-page-sub">Complete payment to confirm your appointment with {{ appt.clinic.name }}.</p>
+    </div>
+
+    <!-- Appointment summary -->
+    <div class="mq-card mb-4">
+      <div class="mq-card-accent-bar mq-bar-primary"></div>
+      <div class="mq-card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <p class="mq-text-muted small mb-1">Clinic</p>
+            <p class="fw-bold mb-2">{{ appt.clinic.name }}</p>
+            <p class="mq-text-muted small mb-1">Doctor</p>
+            <p class="fw-bold mb-2">Dr. {{ appt.doctor.user.full_name }}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mq-text-muted small mb-1">Date & Time</p>
+            <p class="fw-bold mb-2">{{ appt.confirmed_date }} at {{ appt.confirmed_time_slot }}</p>
+            <p class="mq-text-muted small mb-1">Amount Due</p>
+            <p class="fw-bold fs-4 mb-2" style="color:var(--mq-success)">
+              {{ appt.booking_fee_currency }} {{ appt.booking_fee }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if existing and existing.status == 'rejected' %}
+    <div class="alert alert-danger mb-4">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      Your previous payment was <strong>rejected</strong>: {{ existing.notes }}<br>
+      Please resubmit with correct details.
+    </div>
+    {% endif %}
+
+    <!-- Replace the payment method section in payment.html -->
+<div class="mq-field">
+  <label class="mq-label">Payment Method <span class="text-danger">*</span></label>
+
+  <!-- Cards -->
+  <p class="mq-text-muted small fw-bold mb-2 mt-1">💳 Bank Cards</p>
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="card"> Credit / Debit Card
+      </label>
+    </div>
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="paypal"> 🅿️ PayPal
+      </label>
+    </div>
+  </div>
+
+  <!-- Mobile Money -->
+  <p class="mq-text-muted small fw-bold mb-2">📱 Mobile Money</p>
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="mtn_momo" checked> MTN Mobile Money
+      </label>
+    </div>
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="mpesa"> M-Pesa
+      </label>
+    </div>
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="airtel_money"> Airtel Money
+      </label>
+    </div>
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="orange_money"> Orange Money
+      </label>
+    </div>
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="tigo_pesa"> Tigo Pesa
+      </label>
+    </div>
+  </div>
+
+  <!-- Other -->
+  <p class="mq-text-muted small fw-bold mb-2">🏦 Other Methods</p>
+  <div class="row g-2">
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="bank_transfer"> Bank Transfer
+      </label>
+    </div>
+    <div class="col-md-6">
+      <label class="mq-radio-pill w-100">
+        <input type="radio" name="method" value="cash"> 💵 Pay Cash at Clinic
+      </label>
+    </div>
+  </div>
+</div>
+
+          <div class="mq-field">
+            <label class="mq-label">Payment Reference / Transaction ID</label>
+            <input type="text" name="reference" class="form-control mq-input"
+                   placeholder="e.g. TRF-20260515-001 or last 4 digits of card"
+                   value="{{ existing.reference|default:'' }}">
+            <small class="text-muted">Optional but helps speed up verification.</small>
+          </div>
+
+          <div class="mq-field">
+            <label class="mq-label">
+              Upload Proof of Payment
+              <span class="text-muted">(optional but recommended)</span>
+            </label>
+            <input type="file" name="proof_of_payment" class="form-control mq-input"
+                   accept=".pdf,.jpg,.jpeg,.png">
+            <small class="text-muted">
+              Screenshot of transfer, mobile money receipt, or bank slip.
+            </small>
+          </div>
+
+          <div class="mq-card-notice mb-4">
+            <i class="bi bi-info-circle-fill text-primary"></i>
+            After submitting, a receptionist will verify your payment and send a
+            final confirmation. This usually takes a few minutes to a few hours.
+          </div>
+
+          <button type="submit" class="btn mq-btn-success w-100 py-3 fw-bold fs-5">
+            <i class="bi bi-check-circle-fill"></i>
+            Submit Payment — {{ appt.booking_fee_currency }} {{ appt.booking_fee }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

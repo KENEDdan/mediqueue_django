@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Our Services{% endblock %}
+{% block content %}
+<div class="mq-app-layout">
+  {% include 'components/sidebar_clinic_admin.html' %}
+  <main class="mq-main">
+    <div class="mq-main-header">
+      <h1 class="mq-page-title">🔬 Our Services</h1>
+      <p class="mq-page-sub">Services listed here appear on your public profile so patients can find your clinic.</p>
+    </div>
+
+    <!-- Add service -->
+    <div class="mq-card mb-4">
+      <div class="mq-card-body">
+        <h5 class="fw-bold mb-3">Add a Service</h5>
+        {% if available %}
+        <form method="post" class="d-flex gap-3 align-items-end">
+          {% csrf_token %}
+          <div style="flex:1">
+            <label class="mq-label">Specialization</label>
+            <select name="specialization" class="form-select mq-input">
+              {% for spec in available %}
+              <option value="{{ spec.pk }}">{{ spec.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn mq-btn-primary px-4">+ Add</button>
+        </form>
+        {% else %}
+        <p class="text-muted mb-0">All available specializations are already listed.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Active services -->
+    <h3 class="mq-section-title mb-3">Currently Listed Services</h3>
+    {% for svc in active_svcs %}
+    <div class="mq-card mb-3">
+      <div class="mq-card-accent-bar mq-bar-primary"></div>
+      <div class="mq-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="fw-bold mb-0">🔬 {{ svc.specialization.name }}</h5>
+            {% if svc.description %}
+            <p class="mq-text-muted small mb-0">{{ svc.description }}</p>
+            {% endif %}
+          </div>
+          <a href="{% url 'remove_service' svc.pk %}"
+             class="btn mq-btn-danger btn-sm"
+             onclick="return confirm('Remove {{ svc.specialization.name }} from services?')">
+            Remove
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="mq-empty-state">
+      <div class="mq-empty-icon">🔬</div>
+      <p>No services listed yet. Add some so patients can find your clinic!</p>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}

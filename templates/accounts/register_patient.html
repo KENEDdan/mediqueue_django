@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}Create Patient Account{% endblock %}
+{% block content %}
+<div class="mq-auth-layout">
+  <div class="mq-auth-brand">
+    <div class="mq-auth-brand-inner">
+      <div class="mq-auth-logo">🧑</div>
+      <h1 class="mq-auth-brand-name">Join MediQueue</h1>
+      <p class="mq-auth-brand-sub">Free forever for patients</p>
+      <div class="mq-auth-pills">
+        <span class="mq-auth-pill">📅 Book Appointments</span>
+        <span class="mq-auth-pill">🏥 Find Clinics</span>
+        <span class="mq-auth-pill">👨‍⚕️ Choose Doctors</span>
+        <span class="mq-auth-pill">📋 Track History</span>
+      </div>
+    </div>
+  </div>
+  <div class="mq-auth-form-panel">
+    <div class="mq-auth-card mq-auth-card-scroll">
+      <h2 class="mq-auth-title">Create Patient Account</h2>
+      <p class="mq-auth-sub">Free forever — no credit card needed</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mq-field">
+          <label class="mq-label">{{ field.label }}</label>
+          {% render_field field class="form-control mq-input" %}
+          {% if field.errors %}<div class="mq-field-error">{{ field.errors.0 }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn mq-btn-accent w-100 py-3 fw-bold mt-2">
+          Create Account — It's Free →
+        </button>
+        <p class="text-center mq-text-muted small mt-2">
+          By creating an account you agree to our Terms of Service.
+        </p>
+      </form>
+      <hr class="mq-divider">
+      <div class="text-center">
+        <a href="{% url 'patient_login' %}" class="mq-link-sm">Already have an account? Sign in →</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
